@@ -1,8 +1,6 @@
 package main
 
 import (
-	"html/template"
-
 	"github.com/go-martini/martini"
 	"github.com/xyproto/permissions2"
 
@@ -14,8 +12,6 @@ func main() {
 
 	perm := permissions.New()
 	userstate := perm.UserState()
-
-	tmpl := template.Must(template.ParseGlob("templates/*.tmpl"))
 
 	m.Get("/", handlers.Front)
 
@@ -37,7 +33,6 @@ func main() {
 	m.Post("/post", handlers.CreatePost)
 
 	m.Map(userstate)
-	m.Map(tmpl)
 
 	m.Run()
 }
