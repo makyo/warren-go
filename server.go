@@ -33,6 +33,7 @@ func main() {
 	m.Get("/post", h.DisplayCreatePost)
 	m.Post("/post", h.CreatePost)
 
+	m.Use(h.SessionMiddleware)
 	m.Use(h.AuthenticationMiddleware)
 
 	m.Run()

@@ -1,52 +1,52 @@
 package handlers
 
 import (
-	"html/template"
 	"log"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log.Logger) {
-	session, err := h.sessionStore.Get(r, "user-management")
-	if err != nil {
-		log.Print(err)
-		http.Error(w, "An error occurred", 500)
-	}
 	if h.user.IsAuthenticated {
-		session.AddFlash("Already logged in!")
-		session.Save(r, w)
-		http.Redirect(w, r, "/", 302)
+		h.session.AddFlash(NewFlash("Already logged in!"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
-	t := template.Must(template.ParseFiles(
-		"templates/login.tmpl",
-		"templates/base.tmpl"))
-	t.ExecuteTemplate(w, "base", nil)
+	h.render(w, r, "login.tmpl")
 }
 
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, log *log.Logger) {
 	if h.user.IsAuthenticated {
-		http.Redirect(w, r, "/", 302)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
-	session, err := h.sessionStore.Get(r, "user-management")
+	if err := r.ParseForm(); err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Could not parse form", http.StatusInternalServerError)
+	}
+	username, password := r.FormValue("username"), r.FormValue("password")
+	hashword, err := bcrypt.GenerateFromPassword([]byte(password), 0)
 	if err != nil {
-		log.Print(err)
-		http.Error(w, "An error occurred", 500)
+		log.Print(err.Error())
+		http.Error(w, "Could not hash password", http.StatusInternalServerError)
 	}
-	// TODO authenticate user
-	session.Values["authenticated"] = true
-	session.Save(r, w)
-	http.Redirect(w, r, "/", 302)
+	// TODO authenticate against db
+	if err := bcrypt.CompareHashAndPassword(hashword, []byte("password")); err != nil {
+		h.session.AddFlash(NewFlash("Wrong username or password"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	}
+	h.session.Values["authenticated"] = true
+	h.session.Values["username"] = username
+	h.session.Save(r, w)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
-	session, err := h.sessionStore.Get(r, "user-management")
-	if err != nil {
-		log.Print(err)
-		http.Error(w, "An error occurred", 500)
-	}
-	session.Values["authenticated"] = false
-	session.Save(r, w)
-	http.Redirect(w, r, "/", 302)
+	h.session.Values["authenticated"] = false
+	h.session.Values["username"] = nil
+	h.session.Save(r, w)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handlers) DisplayRegister() string {

@@ -5,6 +5,11 @@
 	</head>
 	<body>
 		<h1>{{template `title`}}</h1>
+		{{if .Flashes}}
+		{{range .Flashes}}
+		<p class="{{.Class}}">{{.Message}}</p>
+		{{end}}
+		{{end}}
 		{{template `content`}}
 	</body>
 </html>
