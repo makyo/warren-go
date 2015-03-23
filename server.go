@@ -2,16 +2,12 @@ package main
 
 import (
 	"github.com/go-martini/martini"
-	"github.com/xyproto/permissions2"
 
 	"github.com/makyo/warren-go/handlers"
 )
 
 func main() {
 	m := martini.Classic()
-
-	perm := permissions.New()
-	userstate := perm.UserState()
 
 	m.Get("/", handlers.Front)
 
@@ -31,8 +27,6 @@ func main() {
 	m.Post("/(?P<post>\\d+)/share", handlers.SharePost)
 	m.Get("/post", handlers.DisplayCreatePost)
 	m.Post("/post", handlers.CreatePost)
-
-	m.Map(userstate)
 
 	m.Run()
 }
