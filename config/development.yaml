@@ -1,0 +1,5 @@
+auth-key: "dev-auth-key----"
+encryption-key: "dev-encryption-key--------------"
+mongo:
+    host: "localhost:27017"
+    db: "warren-dev"

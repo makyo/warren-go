@@ -1,18 +1,60 @@
 package main
 
 import (
+	"io/ioutil"
+	"os"
+
 	"github.com/go-martini/martini"
 	"github.com/gorilla/sessions"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/makyo/warren-go/handlers"
 )
 
-var store = sessions.NewCookieStore([]byte("dev-secret"))
+type Mongo struct {
+	Host string `yaml:"host"`
+	DB   string `yaml:"db"`
+}
+
+type Config struct {
+	AuthKey       string `yaml:"auth-key"`
+	EncryptionKey string `yaml:"encryption-key"`
+	Mongo         Mongo
+}
+
+var (
+	store sessions.Store
+	db    *mgo.Database
+)
+
+func init() {
+	var config Config
+	file := os.Args[1]
+	yamlFile, err := ioutil.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+
+	err = yaml.Unmarshal(yamlFile, &config)
+	if err != nil {
+		panic(err)
+	}
+
+	store = sessions.NewCookieStore([]byte(config.AuthKey), []byte(config.EncryptionKey))
+
+	dbSession, err := mgo.Dial(config.Mongo.Host)
+	if err != nil {
+		panic(err)
+	}
+
+	db = dbSession.DB(config.Mongo.DB)
+}
 
 func main() {
 	m := martini.Classic()
 
-	h := handlers.New(store)
+	h := handlers.New(store, db)
 
 	m.Get("/", h.Front)
 
