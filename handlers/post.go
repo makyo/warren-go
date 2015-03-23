@@ -1,25 +1,25 @@
 package handlers
 
-func DisplayPost() string {
+func (h *Handlers) DisplayPost() string {
 	return ""
 }
 
-func DisplayDeletePost() string {
+func (h *Handlers) DisplayDeletePost() string {
 	return ""
 }
 
-func DeletePost() string {
+func (h *Handlers) DeletePost() string {
 	return ""
 }
 
-func SharePost() string {
+func (h *Handlers) SharePost() string {
 	return ""
 }
 
-func DisplayCreatePost() string {
+func (h *Handlers) DisplayCreatePost() string {
 	return ""
 }
 
-func CreatePost() string {
+func (h *Handlers) CreatePost() string {
 	return ""
 }

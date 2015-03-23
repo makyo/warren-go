@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func Front(w http.ResponseWriter) {
+func (h *Handlers) Front(w http.ResponseWriter) {
 	t := template.Must(template.ParseFiles(
 		"templates/front.tmpl",
 		"templates/base.tmpl"))

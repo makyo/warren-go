@@ -2,31 +2,36 @@ package main
 
 import (
 	"github.com/go-martini/martini"
+	"github.com/gorilla/sessions"
 
 	"github.com/makyo/warren-go/handlers"
 )
 
+var store = sessions.NewCookieStore([]byte("dev-secret"))
+
 func main() {
 	m := martini.Classic()
 
-	m.Get("/", handlers.Front)
+	h := handlers.New(store)
 
-	m.Get("/login", handlers.DisplayLogin)
-	m.Post("/login", handlers.Login)
-	m.Get("/logout", handlers.Logout)
-	m.Get("/register", handlers.DisplayRegister)
-	m.Post("/register", handlers.Register)
-	m.Get("/confirm/:confirmation", handlers.Confirm)
-	m.Get("/~:username", handlers.DisplayUser)
-	m.Post("/~:username/follow", handlers.FollowUser)
-	m.Post("/~:username/unfollow", handlers.UnfollowUser)
+	m.Get("/", h.Front)
 
-	m.Get("/(?P<post>\\d+)", handlers.DisplayPost)
-	m.Get("/(?P<post>\\d+)/delete", handlers.DisplayDeletePost)
-	m.Get("/(?P<post>\\d+)/delete", handlers.DeletePost)
-	m.Post("/(?P<post>\\d+)/share", handlers.SharePost)
-	m.Get("/post", handlers.DisplayCreatePost)
-	m.Post("/post", handlers.CreatePost)
+	m.Get("/login", h.DisplayLogin)
+	m.Post("/login", h.Login)
+	m.Get("/logout", h.Logout)
+	m.Get("/register", h.DisplayRegister)
+	m.Post("/register", h.Register)
+	m.Get("/confirm/:confirmation", h.Confirm)
+	m.Get("/~:username", h.DisplayUser)
+	m.Post("/~:username/follow", h.FollowUser)
+	m.Post("/~:username/unfollow", h.UnfollowUser)
+
+	m.Get("/(?P<post>\\d+)", h.DisplayPost)
+	m.Get("/(?P<post>\\d+)/delete", h.DisplayDeletePost)
+	m.Get("/(?P<post>\\d+)/delete", h.DeletePost)
+	m.Post("/(?P<post>\\d+)/share", h.SharePost)
+	m.Get("/post", h.DisplayCreatePost)
+	m.Post("/post", h.CreatePost)
 
 	m.Run()
 }
