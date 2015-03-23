@@ -38,8 +38,10 @@ func (h *Handlers) render(w http.ResponseWriter, r *http.Request, tmpl string, a
 	}
 	templateArg := struct {
 		Flashes []interface{}
+		User    User
 	}{
 		Flashes: flashes,
+		User:    h.user,
 	}
 	t.ExecuteTemplate(w, "base", templateArg)
 }
