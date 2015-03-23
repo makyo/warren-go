@@ -12,8 +12,7 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 		log.Print(err)
 		http.Error(w, "An error occurred", 500)
 	}
-	auth := session.Values["authenticated"]
-	if auth != nil && auth.(bool) {
+	if h.user.IsAuthenticated {
 		session.AddFlash("Already logged in!")
 		session.Save(r, w)
 		http.Redirect(w, r, "/", 302)
@@ -25,6 +24,9 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 }
 
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, log *log.Logger) {
+	if h.user.IsAuthenticated {
+		http.Redirect(w, r, "/", 302)
+	}
 	session, err := h.sessionStore.Get(r, "user-management")
 	if err != nil {
 		log.Print(err)
