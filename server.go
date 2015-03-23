@@ -18,9 +18,10 @@ type Mongo struct {
 }
 
 type Config struct {
-	AuthKey       string `yaml:"auth-key"`
-	EncryptionKey string `yaml:"encryption-key"`
-	Mongo         Mongo
+	EnvironmentType string `yaml:"env-type"`
+	AuthKey         string `yaml:"auth-key"`
+	EncryptionKey   string `yaml:"encryption-key"`
+	Mongo           Mongo
 }
 
 var (

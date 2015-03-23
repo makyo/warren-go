@@ -1,3 +1,4 @@
+env-type: "development"
 auth-key: "dev-auth-key----"
 encryption-key: "dev-encryption-key--------------"
 mongo:
