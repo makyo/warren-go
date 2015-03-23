@@ -68,6 +68,10 @@ func main() {
 	m.Get("/~:username", h.DisplayUser)
 	m.Post("/~:username/follow", h.FollowUser)
 	m.Post("/~:username/unfollow", h.UnfollowUser)
+	m.Post("/~:username/friend/request", h.RequestFriendship)
+	m.Post("/~:username/friend/confirm", h.ConfirmFriendship)
+	m.Post("/~:username/friend/reject", h.RejectFriendship)
+	m.Post("/~:username/friend/cancel", h.CancelFriendship)
 
 	m.Get("/(?P<post>\\d+)", h.DisplayPost)
 	m.Get("/(?P<post>\\d+)/delete", h.DisplayDeletePost)
@@ -75,6 +79,10 @@ func main() {
 	m.Post("/(?P<post>\\d+)/share", h.SharePost)
 	m.Get("/post", h.DisplayCreatePost)
 	m.Post("/post", h.CreatePost)
+
+	m.Get("/posts", h.ListAll)
+	m.Get("/posts/following", h.ListFollowing)
+	m.Get("/posts/friends", h.ListFriends)
 
 	m.Use(h.SessionMiddleware)
 	m.Use(h.AuthenticationMiddleware)

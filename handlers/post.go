@@ -1,25 +1,29 @@
 package handlers
 
-func (h *Handlers) DisplayPost() string {
-	return ""
+import (
+	"net/http"
+)
+
+func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
-func (h *Handlers) DisplayDeletePost() string {
-	return ""
+func (h *Handlers) DisplayDeletePost(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
-func (h *Handlers) DeletePost() string {
-	return ""
+func (h *Handlers) DeletePost(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
-func (h *Handlers) SharePost() string {
-	return ""
+func (h *Handlers) SharePost(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
-func (h *Handlers) DisplayCreatePost() string {
-	return ""
+func (h *Handlers) DisplayCreatePost(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
-func (h *Handlers) CreatePost() string {
-	return ""
+func (h *Handlers) CreatePost(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
