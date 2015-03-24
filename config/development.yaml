@@ -1,4 +1,5 @@
-# env-type should be "development", "test", or "production"
+# env-type sets martini.Env, and should be "development", "test", or
+# "production"
 env-type: "development"
 
 # auth-key should be 16 or 32 characters
