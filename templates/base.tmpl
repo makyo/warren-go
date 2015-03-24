@@ -3,11 +3,15 @@
 <html lang="en">
 	<head>
 		<title>{{template `title`}}</title>
+
+		<!-- ___Bootstrap___ -->
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
 		<!-- Optional theme -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+		{{template `additionalHeaders`}}
 	</head>
 	<body>
 		<div class="navbar navbar-default">
@@ -48,7 +52,9 @@
 			{{if .Flashes}}
 				{{range .Flashes}}
 					<div class="alert alert-{{.Class}} alert-dismissable">
-						<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
 						{{.Message}}
 					</div>
 				{{end}}
