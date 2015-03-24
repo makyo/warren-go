@@ -1,5 +1,5 @@
 // Copyright 2015 The Warren Authors
-// Use of this source code is governed by an MIT license that can be found in 
+// Use of this source code is governed by an MIT license that can be found in
 // the LICENSE file.
 
 package handlers
@@ -7,11 +7,13 @@ package handlers
 import (
 	"github.com/gorilla/sessions"
 	"gopkg.in/mgo.v2"
+
+	"github.com/makyo/warren-go/models"
 )
 
 type User struct {
 	IsAuthenticated bool
-	Username        string
+	Model           models.User
 }
 
 type Handlers struct {

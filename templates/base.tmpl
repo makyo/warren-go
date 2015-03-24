@@ -7,7 +7,7 @@
 		<h1>{{template `title`}}</h1>
 		<p>
 			{{if .User.IsAuthenticated}}
-				Logged in as {{.User.Username}} - <a href="/logout">Logout</a>
+				Logged in as {{.User.Model.Username}} - <a href="/logout">Logout</a>
 			{{else}}
 				<a href="/login">Login</a>
 			{{end}}

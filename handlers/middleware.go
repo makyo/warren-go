@@ -1,5 +1,5 @@
 // Copyright 2015 The Warren Authors
-// Use of this source code is governed by an MIT license that can be found in 
+// Use of this source code is governed by an MIT license that can be found in
 // the LICENSE file.
 
 package handlers
@@ -7,6 +7,8 @@ package handlers
 import (
 	"log"
 	"net/http"
+
+	"github.com/makyo/warren-go/models"
 )
 
 func (h *Handlers) SessionMiddleware(w http.ResponseWriter, r *http.Request, l *log.Logger) {
@@ -27,8 +29,17 @@ func (h *Handlers) AuthenticationMiddleware(w http.ResponseWriter, r *http.Reque
 	if username == nil {
 		username = ""
 	}
+	model := models.User{}
+	if username != "" {
+		var err error
+		model, err = models.GetUser(username.(string), h.db)
+		if err != nil {
+			l.Print(err.Error())
+			http.Error(w, "Could not fetch user", http.StatusInternalServerError)
+		}
+	}
 	h.user = User{
 		IsAuthenticated: auth.(bool),
-		Username:        username.(string),
+		Model:           model,
 	}
 }
