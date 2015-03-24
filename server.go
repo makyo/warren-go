@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/gorilla/sessions"
+	"github.com/martini-contrib/secure"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/yaml.v2"
 
@@ -90,6 +91,18 @@ func main() {
 	m.Get("/posts/following", h.ListFollowing)
 	m.Get("/posts/friends", h.ListFriends)
 
+	m.Use(secure.Secure(secure.Options{
+		//AllowedHosts:          []string{"example.com", "ssl.example.com"},
+		//SSLHost:               "ssl.example.com",
+		SSLRedirect:           true,
+		SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
+		STSSeconds:            315360000,
+		STSIncludeSubdomains:  true,
+		FrameDeny:             true,
+		ContentTypeNosniff:    true,
+		BrowserXssFilter:      true,
+		ContentSecurityPolicy: "default-src 'self'",
+	}))
 	m.Use(h.SessionMiddleware)
 	m.Use(h.AuthenticationMiddleware)
 

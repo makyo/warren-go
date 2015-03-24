@@ -3,6 +3,7 @@ github.com/go-martini/martini	git	8412a652ddae77553a9442708a527d0e616939a3
 github.com/gorilla/context	git	215affda49addc4c8ef7e2534915df2c8c35c6cd	
 github.com/gorilla/securecookie	git	a54a6f264e283c7afd37f9d7a772965e7a72408c	
 github.com/gorilla/sessions	git	1f45645972a051deb63c8e8e3c594041a6145e35	
+github.com/martini-contrib/secure	git	56b905eb8ab2eb124d2f4acfa3ea893df45b7d79	
 golang.org/x/crypto	git	b7d6bf2c61544745a02f83dec90393985fc3a065	
 gopkg.in/check.v1	git	64131543e7896d5bcc6bd5a76287eb75ea96c673	
 gopkg.in/mgo.v2	git	c6a7dce14133ccac2dcac3793f1d6e2ef048503a	
