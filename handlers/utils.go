@@ -1,5 +1,5 @@
 // Copyright 2015 The Warren Authors
-// Use of this source code is governed by an MIT license that can be found in 
+// Use of this source code is governed by an MIT license that can be found in
 // the LICENSE file.
 
 package handlers
@@ -21,9 +21,11 @@ type Flash struct {
 	Message string
 }
 
+// Creates a new flash item to be stored in the session, with an optional CSS
+// class, which can be "success", "info", "warning", or "danger".
 func NewFlash(message string, class ...string) Flash {
 	if len(class) == 0 {
-		class = []string{"notice"}
+		class = []string{"info"}
 	}
 	return Flash{
 		Class:   class[0],

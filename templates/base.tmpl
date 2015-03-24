@@ -47,7 +47,10 @@
 		<article class="container">
 			{{if .Flashes}}
 				{{range .Flashes}}
-					<p class="{{.Class}}">{{.Message}}</p>
+					<div class="alert alert-{{.Class}} alert-dismissable">
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						{{.Message}}
+					</div>
 				{{end}}
 			{{end}}
 			{{template `content`}}
