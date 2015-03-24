@@ -1,4 +1,4 @@
-# env-type should be "development", "testing", or "production"
+# env-type should be "development", "test", or "production"
 env-type: "development"
 
 # auth-key should be 16 or 32 characters
