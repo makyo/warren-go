@@ -101,6 +101,7 @@ func main() {
 		FrameDeny:            true,
 		ContentTypeNosniff:   true,
 		BrowserXssFilter:     true,
+		//XXX remove when bootstrap is served locally.
 		//ContentSecurityPolicy: "default-src 'self'",
 	}))
 	m.Use(h.SessionMiddleware)
