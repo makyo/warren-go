@@ -28,6 +28,7 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 		"Title": "Log in",
 		"User": h.user,
 		"Flashes": h.flashes(r, w),
+		"CSRF": h.session.Values["_csrf_token"],
 	})
 }
 
@@ -78,6 +79,7 @@ func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, rende
 		"Title": "Sign up",
 		"User": h.user,
 		"Flashes": h.flashes(r, w),
+		"CSRF": h.session.Values["_csrf_token"],
 	})
 }
 

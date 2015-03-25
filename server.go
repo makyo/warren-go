@@ -110,6 +110,7 @@ func main() {
 	}))
 	m.Use(h.SessionMiddleware)
 	m.Use(h.AuthenticationMiddleware)
+	m.Use(h.CSRFMiddleware)
 
 	m.Run()
 }
