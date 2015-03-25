@@ -1,5 +1,5 @@
 // Copyright 2015 The Warren Authors
-// Use of this source code is governed by an MIT license that can be found in 
+// Use of this source code is governed by an MIT license that can be found in
 // the LICENSE file.
 
 package handlers
@@ -74,12 +74,12 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	username, email, password, passwordConfirm := r.FormValue("username"), r.FormValue("email"), r.FormValue("password"), r.FormValue("passwordconfirm")
 	if username == "" || email == "" || password == "" {
-		h.session.AddFlash(NewFlash("All fields required!", "error"))
+		h.session.AddFlash(NewFlash("All fields required!", "warning"))
 		h.session.Save(r, w)
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 	}
 	if password != passwordConfirm {
-		h.session.AddFlash(NewFlash("Passwords did not match!", "error"))
+		h.session.AddFlash(NewFlash("Passwords did not match!", "warning"))
 		h.session.Save(r, w)
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 	}
@@ -90,7 +90,7 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not execute find", http.StatusInternalServerError)
 	}
 	if existing > 0 {
-		h.session.AddFlash(NewFlash("Username taken!", "error"))
+		h.session.AddFlash(NewFlash("Username taken!", "warning"))
 		h.session.Save(r, w)
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 	}
