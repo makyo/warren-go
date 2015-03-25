@@ -9,6 +9,7 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"github.com/makyo/warren-go/models"
+	elastigo "github.com/mattbaird/elastigo/lib"
 )
 
 type User struct {
@@ -20,13 +21,15 @@ type Handlers struct {
 	sessionStore sessions.Store
 	session      *sessions.Session
 	db           *mgo.Database
+	esConn       *elastigo.Conn
 	user         User
 }
 
-func New(store sessions.Store, db *mgo.Database) Handlers {
+func New(store sessions.Store, db *mgo.Database, esConn *elastigo.Conn) Handlers {
 	h := Handlers{
 		sessionStore: store,
 		db:           db,
+		esConn:       esConn,
 	}
 	return h
 }

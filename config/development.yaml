@@ -12,3 +12,8 @@ encryption-key: "dev-encryption-key--------------"
 mongo:
     host: "localhost:27017"
     db: "warren-dev"
+
+# ElasticSearch connection details
+elasticsearch:
+    host: "localhost"
+    port: 9300

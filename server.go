@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/secure"
+	elastigo "github.com/mattbaird/elastigo/lib"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/yaml.v2"
 
@@ -23,16 +24,24 @@ type Mongo struct {
 	DB   string `yaml:"db"`
 }
 
+type ElasticSearch struct {
+	Host  string `yaml:"host"`
+	Port  string `yaml:"port"`
+	Index string `yaml:"index"`
+}
+
 type Config struct {
-	EnvironmentType string `yaml:"env-type"`
-	AuthKey         string `yaml:"auth-key"`
-	EncryptionKey   string `yaml:"encryption-key"`
-	Mongo           Mongo
+	EnvironmentType string        `yaml:"env-type"`
+	AuthKey         string        `yaml:"auth-key"`
+	EncryptionKey   string        `yaml:"encryption-key"`
+	Mongo           Mongo         `yaml:"mongo"`
+	ElasticSearch   ElasticSearch `yaml:"elasticsearch"`
 }
 
 var (
-	store sessions.Store
-	db    *mgo.Database
+	store  sessions.Store
+	db     *mgo.Database
+	esConn *elastigo.Conn
 )
 
 func init() {
@@ -58,12 +67,16 @@ func init() {
 	}
 
 	db = dbSession.DB(config.Mongo.DB)
+
+	esConn := elastigo.NewConn()
+	esConn.Domain = config.ElasticSearch.Host
+	esConn.Port = config.ElasticSearch.Port
 }
 
 func main() {
 	m := martini.Classic()
 
-	h := handlers.New(store, db)
+	h := handlers.New(store, db, esConn)
 
 	m.Get("/", h.Front)
 
