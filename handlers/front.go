@@ -6,8 +6,14 @@ package handlers
 
 import (
 	"net/http"
+
+	"github.com/martini-contrib/render"
 )
 
-func (h *Handlers) Front(w http.ResponseWriter, r *http.Request) {
-	h.render(w, r, "front.tmpl")
+func (h *Handlers) Front(w http.ResponseWriter, r *http.Request, render render.Render) {
+	render.HTML(200, "front/front", map[string]interface{}{
+		"Title": "Welcome",
+		"User": h.user,
+		"Flashes": h.flashes(r, w),
+	})
 }

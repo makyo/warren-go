@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/gorilla/sessions"
+	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/secure"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/yaml.v2"
@@ -103,6 +104,9 @@ func main() {
 		BrowserXssFilter:     true,
 		//XXX remove when bootstrap is served locally.
 		//ContentSecurityPolicy: "default-src 'self'",
+	}))
+	m.Use(render.Renderer(render.Options{
+		Layout: "base",
 	}))
 	m.Use(h.SessionMiddleware)
 	m.Use(h.AuthenticationMiddleware)

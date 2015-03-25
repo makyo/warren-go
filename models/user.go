@@ -25,8 +25,12 @@ func (u *User) Save(db *mgo.Database) error {
 }
 
 func GetUser(username string, db *mgo.Database) (User, error) {
-	user := User{}
+	var user User
 	c := db.C("users")
-	err := c.Find(bson.M{"username": username}).One(&user)
+	q := c.Find(bson.M{"username": username})
+	if c, err := q.Count(); c == 0 {
+		return user, err
+	}
+	err := q.One(&user)
 	return user, err
 }

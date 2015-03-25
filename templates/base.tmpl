@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>{{template `title`}}</title>
+		<title>{{.Title}}</title>
 
 		<!-- ___Bootstrap___ -->
 		<!-- Latest compiled and minified CSS -->
@@ -10,8 +10,6 @@
 
 		<!-- Optional theme -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
-
-		{{template `additionalHeaders`}}
 	</head>
 	<body>
 		<div class="navbar navbar-default">
@@ -23,7 +21,7 @@
    			        	<span class="icon-bar"></span>
        			    	<span class="icon-bar"></span>
       				</button>
-      				<a class="navbar-brand" href="#">Warren</a>
+      				<a class="navbar-brand" href="/">Warren</a>
       			</div>
       			<div class="collapse navbar-collapse">
       				<ul class="nav navbar-nav">
@@ -46,7 +44,7 @@
       		</div>
 		</div>
 		<header class="container">
-			<h1>{{template `title`}}</h1>
+			<h1>{{.Title}}</h1>
 		</header>
 		<article class="container">
 			{{if .Flashes}}
@@ -59,7 +57,7 @@
 					</div>
 				{{end}}
 			{{end}}
-			{{template `content`}}
+			{{yield}}
 		</article>
 
 

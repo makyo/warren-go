@@ -6,8 +6,6 @@ package handlers
 
 import (
 	"encoding/gob"
-	"fmt"
-	"html/template"
 	"net/http"
 )
 
@@ -33,21 +31,10 @@ func NewFlash(message string, class ...string) Flash {
 	}
 }
 
-/* Template rendering ------------------------------------------------------ */
-func (h *Handlers) render(w http.ResponseWriter, r *http.Request, tmpl string, args ...interface{}) {
-	t := template.Must(template.ParseFiles(
-		fmt.Sprintf("templates/%s", tmpl),
-		"templates/base.tmpl"))
+func (h *Handlers) flashes(r *http.Request, w http.ResponseWriter) []interface{} {
 	flashes := h.session.Flashes()
 	if len(flashes) > 0 {
 		h.session.Save(r, w)
 	}
-	templateArg := struct {
-		Flashes []interface{}
-		User    User
-	}{
-		Flashes: flashes,
-		User:    h.user,
-	}
-	t.ExecuteTemplate(w, "base", templateArg)
+	return flashes
 }
