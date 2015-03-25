@@ -95,15 +95,14 @@ func main() {
 	m.Use(secure.Secure(secure.Options{
 		//AllowedHosts:          []string{"example.com", "ssl.example.com"},
 		//SSLHost:               "ssl.example.com",
-		SSLRedirect:          true,
-		SSLProxyHeaders:      map[string]string{"X-Forwarded-Proto": "https"},
-		STSSeconds:           315360000,
-		STSIncludeSubdomains: true,
-		FrameDeny:            true,
-		ContentTypeNosniff:   true,
-		BrowserXssFilter:     true,
-		//XXX remove when bootstrap is served locally.
-		//ContentSecurityPolicy: "default-src 'self'",
+		SSLRedirect:           true,
+		SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
+		STSSeconds:            315360000,
+		STSIncludeSubdomains:  true,
+		FrameDeny:             true,
+		ContentTypeNosniff:    true,
+		BrowserXssFilter:      true,
+		ContentSecurityPolicy: "default-src 'self'",
 	}))
 	m.Use(render.Renderer(render.Options{
 		Layout: "base",
