@@ -102,7 +102,7 @@ func main() {
 		FrameDeny:             true,
 		ContentTypeNosniff:    true,
 		BrowserXssFilter:      true,
-		ContentSecurityPolicy: "default-src 'self'",
+		ContentSecurityPolicy: "default-src 'self'; style-src 'self' 'unsafe-inline'",
 	}))
 	m.Use(render.Renderer(render.Options{
 		Layout: "base",
