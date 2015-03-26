@@ -1,7 +1,11 @@
+<h2>Friend requests</h2>
 {{$CSRF := .CSRF}}
 {{range $index, $element := .User.Model.FriendRequests}}
+	{{if eq (mod $index 6) 0}}
+		<div class="row">
+	{{end}}
 	<div class="col-sm-2">
-		{{$element}}
+		<a href="/~{{urlquery $element}}">{{$element}}</a>
 		<form action="/~{{urlquery $element}}/friend/confirm" method="post">
 			<input type="hidden" name="_csrf_token" value="{{$CSRF}}" />
 			<button class="btn btn-success">
@@ -17,6 +21,30 @@
 			</button>
 		</form>
 	</div>
+	{{if eq (mod $index 6) 5}}
+		</div>
+	{{end}}
 {{else}}
 	No friend requests!
+{{end}}
+{{if ne (mod (len .User.Model.FriendRequests) 6) 0}}
+	</div>
+{{end}}
+
+<h2>Pending requests</h2>
+{{range $index, $element := .User.Model.FriendshipsRequested}}
+	{{if eq (mod $index 6) 0}}
+		<div class="row">
+	{{end}}
+	<div class="col-sm-2">
+		<a href="/~{{urlquery $element}}">{{$element}}</a>
+	</div>
+	{{if eq (mod $index 6) 5}}
+		</div>
+	{{end}}
+{{else}}
+	No pending requests!
+{{end}}
+{{if ne (mod (len .User.Model.FriendshipsRequested) 6) 0}}
+	</div>
 {{end}}
