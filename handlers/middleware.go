@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 
-	"github.com/makyo/warren-go/models"
+	"github.com/warren-community/warren/models"
 )
 
 // Provide authentication middleware that fetches the user from the database if

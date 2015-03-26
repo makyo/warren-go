@@ -2,7 +2,7 @@ ifndef GOPATH
 	$(warning You need to set up a GOPATH)
 endif
 
-PROJECT := github.com/makyo/warren-go
+PROJECT := github.com/warren-community/warren
 PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
 
 help:

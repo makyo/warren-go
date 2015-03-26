@@ -8,8 +8,8 @@ import (
 	"github.com/gorilla/sessions"
 	"gopkg.in/mgo.v2"
 
-	"github.com/makyo/warren-go/models"
 	elastigo "github.com/mattbaird/elastigo/lib"
+	"github.com/warren-community/warren/models"
 )
 
 // A user object to store in the session, containing a User model and a flag

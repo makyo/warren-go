@@ -16,7 +16,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/yaml.v2"
 
-	"github.com/makyo/warren-go/handlers"
+	"github.com/warren-community/warren/handlers"
 )
 
 // Store Mongo connection information

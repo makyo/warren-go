@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/makyo/warren-go/models"
+	"github.com/warren-community/warren/models"
 )
 
 // Display a login form (or redirect if the user is already logged in).
