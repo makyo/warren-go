@@ -9,9 +9,9 @@ import (
 	"log"
 	"net/http"
 
-	"golang.org/x/crypto/bcrypt"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/makyo/warren-go/models"
@@ -25,10 +25,10 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 		return
 	}
 	render.HTML(200, "user/login", map[string]interface{}{
-		"Title": "Log in",
-		"User": h.user,
+		"Title":   "Log in",
+		"User":    h.user,
 		"Flashes": h.flashes(r, w),
-		"CSRF": h.session.Values["_csrf_token"],
+		"CSRF":    h.session.Values["_csrf_token"],
 	})
 }
 
@@ -76,10 +76,10 @@ func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, rende
 		return
 	}
 	render.HTML(200, "user/register", map[string]interface{}{
-		"Title": "Sign up",
-		"User": h.user,
+		"Title":   "Sign up",
+		"User":    h.user,
 		"Flashes": h.flashes(r, w),
-		"CSRF": h.session.Values["_csrf_token"],
+		"CSRF":    h.session.Values["_csrf_token"],
 	})
 }
 
@@ -144,7 +144,8 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 	if h.user.IsAuthenticated && username == h.user.Model.Username {
 		user = h.user.Model
 	} else {
-		user, err := models.GetUser(username, h.db)
+		var err error
+		user, err = models.GetUser(username, h.db)
 		if err != nil {
 			l.Print(err.Error())
 			http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
@@ -156,33 +157,153 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 		}
 	}
 	render.HTML(200, "user/displayUser", map[string]interface{}{
-		"Title": fmt.Sprintf("User %s", user.Username),
-		"User": h.user,
-		"Flashes": h.flashes(r, w),
-		"DisplayUser": user,
+		"Title":                  fmt.Sprintf("User %s", user.Username),
+		"User":                   h.user,
+		"Flashes":                h.flashes(r, w),
+		"CSRF":                   h.session.Values["_csrf_token"],
+		"DisplayUser":            user,
+		"IsFollowing":            h.user.Model.IsFollowing(user.Username),
+		"IsFriend":               h.user.Model.IsFriend(user.Username),
+		"FriendRequestPending":   h.user.Model.HasRequestedFriendship(user.Username),
+		"HasRequestedFriendship": user.HasRequestedFriendship(h.user.Model.Username),
 	})
 }
 
-func (h *Handlers) FollowUser(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) FollowUser(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
+	username := params["username"]
+	user, err := models.GetUser(username, h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		return
+	}
+	if user.Username == "" {
+		http.Error(w, "Could not find user", http.StatusNotFound)
+		return
+	}
+	h.user.Model.AddFollowing(&user)
+	h.user.Model.Save(h.db)
+	user.Save(h.db)
+	h.session.AddFlash(NewFlash("User followed!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
-func (h *Handlers) UnfollowUser(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) UnfollowUser(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
+	username := params["username"]
+	user, err := models.GetUser(username, h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		return
+	}
+	if user.Username == "" {
+		http.Error(w, "Could not find user", http.StatusNotFound)
+		return
+	}
+	h.user.Model.RemoveFollowing(&user)
+	h.user.Model.Save(h.db)
+	user.Save(h.db)
+	h.session.AddFlash(NewFlash("User unfollowed!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
-func (h *Handlers) RequestFriendship(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) RequestFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
+	username := params["username"]
+	user, err := models.GetUser(username, h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		return
+	}
+	if user.Username == "" {
+		http.Error(w, "Could not find user", http.StatusNotFound)
+		return
+	}
+	h.user.Model.RequestFriendship(&user)
+	h.user.Model.Save(h.db)
+	user.Save(h.db)
+	h.session.AddFlash(NewFlash("Friendship requested!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
-func (h *Handlers) ConfirmFriendship(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) DisplayFriendshipRequests(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params, render render.Render) {
+	if !h.user.IsAuthenticated {
+		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	if h.user.Model.Username != params["username"] {
+		http.Redirect(w, r, fmt.Sprintf("/~%s/friend/requests", h.user.Model.Username), http.StatusSeeOther)
+		return
+	}
+	render.HTML(200, "user/displayFriendshipRequests", map[string]interface{}{
+		"Title":   "Friendship Requests",
+		"User":    h.user,
+		"Flashes": h.flashes(r, w),
+		"CSRF":    h.session.Values["_csrf_token"],
+	})
 }
 
-func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) ConfirmFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
+	username := params["username"]
+	user, err := models.GetUser(username, h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		return
+	}
+	if user.Username == "" {
+		http.Error(w, "Could not find user", http.StatusNotFound)
+		return
+	}
+	h.user.Model.AddFriendship(&user)
+	h.user.Model.Save(h.db)
+	user.Save(h.db)
+	h.session.AddFlash(NewFlash("Friendship confirmed!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
-func (h *Handlers) CancelFriendship(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
+	username := params["username"]
+	user, err := models.GetUser(username, h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		return
+	}
+	if user.Username == "" {
+		http.Error(w, "Could not find user", http.StatusNotFound)
+		return
+	}
+	h.user.Model.RemoveFriendshipRequest(&user)
+	h.user.Model.Save(h.db)
+	user.Save(h.db)
+	h.session.AddFlash(NewFlash("Friendship request rejected!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s/friend/requests", h.user.Model.Username), http.StatusSeeOther)
+}
+
+func (h *Handlers) CancelFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
+	username := params["username"]
+	user, err := models.GetUser(username, h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		return
+	}
+	if user.Username == "" {
+		http.Error(w, "Could not find user", http.StatusNotFound)
+		return
+	}
+	h.user.Model.RemoveFriendship(&user)
+	h.user.Model.Save(h.db)
+	user.Save(h.db)
+	h.session.AddFlash(NewFlash("Friendship canceled!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }

@@ -33,7 +33,7 @@
       				</ul>
       				<ul class="nav navbar-nav navbar-right">
   						{{if .User.IsAuthenticated}}
-							<li><a href="/~{{.User.Model.Username}}">{{.User.Model.Username}}</a></li>
+							<li><a href="/~{{urlquery .User.Model.Username}}">{{.User.Model.Username}}</a></li>
 							<li><a href="/logout">Logout</a></li>
 						{{else}}
 							<li><a href="/login">Login</a></li>

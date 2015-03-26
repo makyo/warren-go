@@ -1,0 +1,22 @@
+{{$CSRF := .CSRF}}
+{{range $index, $element := .User.Model.FriendRequests}}
+	<div class="col-sm-2">
+		{{$element}}
+		<form action="/~{{urlquery $element}}/friend/confirm" method="post">
+			<input type="hidden" name="_csrf_token" value="{{$CSRF}}" />
+			<button class="btn btn-success">
+				<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+				Accept
+			</button>
+		</form>
+		<form action="/~{{urlquery $element}}/friend/reject" method="post">
+			<input type="hidden" name="_csrf_token" value="{{$CSRF}}" />
+			<button class="btn btn-danger">
+				<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+				Reject
+			</button>
+		</form>
+	</div>
+{{else}}
+	No friend requests!
+{{end}}

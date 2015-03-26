@@ -90,6 +90,7 @@ func main() {
 	m.Post("/~:username/follow", h.FollowUser)
 	m.Post("/~:username/unfollow", h.UnfollowUser)
 	m.Post("/~:username/friend/request", h.RequestFriendship)
+	m.Get("/~:username/friend/requests", h.DisplayFriendshipRequests)
 	m.Post("/~:username/friend/confirm", h.ConfirmFriendship)
 	m.Post("/~:username/friend/reject", h.RejectFriendship)
 	m.Post("/~:username/friend/cancel", h.CancelFriendship)
