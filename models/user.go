@@ -79,7 +79,7 @@ func (u *User) HasRequestedFriendship(username string) bool {
 }
 
 func (u *User) RequestFriendship(user *User) {
-	if !u.HasRequestedFriendship(user.Username) {
+	if !u.HasRequestedFriendship(user.Username) && !u.IsFriend(user.Username) {
 		u.FriendshipsRequested = append(u.FriendshipsRequested, user.Username)
 		user.FriendRequests = append(user.FriendRequests, u.Username)
 	}
@@ -107,7 +107,9 @@ func (u *User) AddFriendship(user *User) {
 	if !u.IsFriend(user.Username) {
 		u.Friends = append(u.Friends, user.Username)
 		user.Friends = append(user.Friends, u.Username)
-		u.RemoveFriendshipRequest(user)
+		if u.HasRequestedFriendship(user.Username) {
+			u.RemoveFriendshipRequest(user)
+		}
 		if user.HasRequestedFriendship(u.Username) {
 			user.RemoveFriendshipRequest(u)
 		}
