@@ -5,6 +5,7 @@
 package main
 
 import (
+	"html/template"
 	"io/ioutil"
 	"os"
 
@@ -124,6 +125,13 @@ func main() {
 	}))
 	m.Use(render.Renderer(render.Options{
 		Layout: "base",
+		Funcs: []template.FuncMap{
+			{
+				"mod": func(x int, y int) int {
+					return x % y
+				},
+			},
+		},
 	}))
 	m.Use(h.SessionMiddleware)
 	m.Use(h.AuthenticationMiddleware)
