@@ -26,8 +26,7 @@ type User struct {
 // Retrieve a user from the database given a username
 func GetUser(username string, db *mgo.Database) (User, error) {
 	var user User
-	c := db.C("users")
-	q := c.Find(bson.M{"username": username})
+	q := db.C("users").Find(bson.M{"username": username})
 	if c, err := q.Count(); c == 0 {
 		return user, err
 	}
@@ -49,16 +48,25 @@ func NewUser(username string, email string, password string) (User, error) {
 
 // Save a given user model to the database.
 func (u *User) Save(db *mgo.Database) error {
-	c := db.C("users")
-	_, err := c.Upsert(bson.M{"username": u.Username}, u)
+	_, err := db.C("users").Upsert(bson.M{"username": u.Username}, u)
 	return err
 }
 
+// Attempt to authenticate user with a password.
 func (u *User) Authenticate(password string) bool {
 	if err := bcrypt.CompareHashAndPassword(u.Hashword, []byte(password)); err != nil {
 		return false
 	}
 	return true
+}
+
+// Fetch all given entities for a user
+// XXX This is a naive and expensive approach
+func (u *User) Entities(db *mgo.Database) ([]Entity, error) {
+	var result []Entity
+	q := db.C("entities").Find(bson.M{"owner": u.Username})
+	err := q.All(&result)
+	return result, err
 }
 
 // Return true if the user is following another user by that username.

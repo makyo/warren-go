@@ -157,6 +157,12 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 			return
 		}
 	}
+	entities, err := user.Entities(h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch entities from database", http.StatusInternalServerError)
+		return
+	}
 	render.HTML(200, "user/displayUser", map[string]interface{}{
 		"Title":                  fmt.Sprintf("User %s", user.Username),
 		"User":                   h.user,
@@ -167,6 +173,7 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 		"IsFriend":               h.user.Model.IsFriend(user.Username),
 		"FriendRequestPending":   h.user.Model.HasRequestedFriendship(user.Username),
 		"HasRequestedFriendship": user.HasRequestedFriendship(h.user.Model.Username),
+		"Entities":               entities,
 	})
 }
 

@@ -100,12 +100,12 @@ func main() {
 	m.Post("/user/friend/reject", h.RejectFriendship)
 	m.Post("/user/friend/cancel", h.CancelFriendship)
 
-	m.Get("/(?P<post>[a-z0-9]+)", h.DisplayPost)
-	m.Get("/(?P<post>[a-z0-9]+)/delete", h.DisplayDeletePost)
-	m.Get("/(?P<post>[a-z0-9]+)/delete", h.DeletePost)
-	m.Post("/(?P<post>[a-z0-9]+)/share", h.SharePost)
-	m.Get("/post", h.DisplayCreatePost)
-	m.Post("/post", h.CreatePost)
+	m.Get("/(?P<entityId>[a-f0-9]{24})", h.DisplayPost)
+	m.Post("/post/delete", h.DeletePost)
+	m.Get("/(?P<entityId>[a-f0-9]{24})/share", h.DisplaySharePost)
+	m.Post("/post/share", h.SharePost)
+	m.Get("/post/create", h.DisplayCreatePost)
+	m.Post("/post/create", h.CreatePost)
 
 	m.Get("/posts", h.ListAll)
 	m.Get("/posts/following", h.ListFollowing)

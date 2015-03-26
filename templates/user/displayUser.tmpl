@@ -94,3 +94,14 @@
 		{{end}}
 	{{end}}
 {{end}}
+
+<h2>Posts</h2>
+{{if ne (len .Entities) 0}}
+	<ul>
+		{{range .Entities}}
+			<li><a href="/{{.Id.Hex}}">{{.Title}}</a></li>
+		{{end}}
+	</ul>
+{{else}}
+	No posts to display.
+{{end}}

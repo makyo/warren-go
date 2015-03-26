@@ -5,21 +5,72 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/go-martini/martini"
+	"github.com/martini-contrib/render"
+
+	"github.com/warren-community/warren/models"
 )
 
 // Display a single post.
-func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
-}
-
-// Display a form confirming deletion of a post.
-func (h *Handlers) DisplayDeletePost(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params, render render.Render) {
+	entity, err := models.GetEntity(params["entityId"], h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch entity", http.StatusInternalServerError)
+		return
+	}
+	if entity.Id.Hex() == "" {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+	render.HTML(200, "post/displayPost", map[string]interface{}{
+		"Title":   entity.Title,
+		"User":    h.user,
+		"Flashes": h.flashes(r, w),
+		"CSRF":    h.session.Values["_csrf_token"],
+		"Entity":  entity,
+		"IsOwner": entity.BelongsToUser(h.user.Model),
+	})
 }
 
 // Remove a post from the database.
-func (h *Handlers) DeletePost(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) DeletePost(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+	if !h.user.IsAuthenticated {
+		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	entity, err := models.GetEntity(r.FormValue("entityId"), h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not fetch entity", http.StatusInternalServerError)
+		return
+	}
+	if entity.Id.Hex() == "" {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+	if !entity.BelongsToUser(h.user.Model) {
+		http.Error(w, "Permission denied, you may only delete your own posts", http.StatusForbidden)
+		return
+	}
+	err = entity.Delete(h.db)
+	if err != nil {
+		l.Print(err.Error())
+		http.Error(w, "Could not delete entity", http.StatusInternalServerError)
+		return
+	}
+	h.session.AddFlash(NewFlash("Post deleted!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s", h.user.Model.Username), http.StatusSeeOther)
+}
+
+func (h *Handlers) DisplaySharePost(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
@@ -29,11 +80,42 @@ func (h *Handlers) SharePost(w http.ResponseWriter, r *http.Request) {
 }
 
 // Display the form for creating a post.
-func (h *Handlers) DisplayCreatePost(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) DisplayCreatePost(w http.ResponseWriter, r *http.Request, render render.Render) {
+	if !h.user.IsAuthenticated {
+		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	render.HTML(200, "post/displayCreatePost", map[string]interface{}{
+		"Title":   "Create post",
+		"User":    h.user,
+		"Flashes": h.flashes(r, w),
+		"CSRF":    h.session.Values["_csrf_token"],
+	})
 }
 
 // Create a post in the database.
-func (h *Handlers) CreatePost(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+func (h *Handlers) CreatePost(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+	if !h.user.IsAuthenticated {
+		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	entity := models.NewEntity(
+		"", // TODO ContentType
+		h.user.Model.Username,
+		h.user.Model.Username,
+		false, // Shared?
+		r.FormValue("title"),
+		r.FormValue("content"),
+	)
+	err := entity.Save(h.db)
+	if err != nil {
+		l.Print(err.Error)
+		http.Error(w, "Could not save post", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, fmt.Sprintf("/%s", entity.Id.Hex()), http.StatusSeeOther)
 }
