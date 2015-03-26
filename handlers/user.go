@@ -293,7 +293,7 @@ func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request, l *l
 		http.Error(w, "Could not find user", http.StatusNotFound)
 		return
 	}
-	h.user.Model.RemoveFriendshipRequest(&user)
+	user.RemoveFriendshipRequest(&h.user.Model)
 	h.user.Model.Save(h.db)
 	user.Save(h.db)
 	h.session.AddFlash(NewFlash("Friendship request rejected!", "success"))

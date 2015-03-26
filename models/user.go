@@ -5,7 +5,6 @@
 package models
 
 import (
-	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -109,17 +108,16 @@ func (u *User) RequestFriendship(user *User) {
 
 // Remove a friendship request between this user and the given user.
 func (u *User) RemoveFriendshipRequest(user *User) {
-	if user.HasRequestedFriendship(u.Username) {
-		fmt.Println("Found a request")
-		for i, name := range u.FriendRequests {
-			if name == user.Username {
-				u.FriendRequests = append(u.FriendRequests[:i], u.FriendRequests[i+1:]...)
+	if u.HasRequestedFriendship(user.Username) {
+		for i, name := range user.FriendRequests {
+			if name == u.Username {
+				user.FriendRequests = append(user.FriendRequests[:i], user.FriendRequests[i+1:]...)
 				break
 			}
 		}
-		for i, name := range user.FriendshipsRequested {
-			if name == u.Username {
-				user.FriendshipsRequested = append(user.FriendshipsRequested[:i], user.FriendshipsRequested[i+1:]...)
+		for i, name := range u.FriendshipsRequested {
+			if name == user.Username {
+				u.FriendshipsRequested = append(u.FriendshipsRequested[:i], u.FriendshipsRequested[i+1:]...)
 				break
 			}
 		}

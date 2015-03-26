@@ -3,153 +3,168 @@ package models
 import (
 	"testing"
 
-	. "gopkg.in/check.v1"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+func TestUserModel(t *testing.T) {
+	Convey("Given two users", t, func() {
+		a, b := User{Username: "a"}, User{Username: "b"}
 
-type UserModelFollowingSuite struct {
-	a User
-	b User
-}
+		Convey("When one follows the other", func() {
+			a.AddFollowing(&b)
 
-func (s *UserModelFollowingSuite) SetUpTest(c *C) {
-	s.a, s.b = User{Username: "a"}, User{Username: "b"}
-	s.a.AddFollowing(&s.b)
-}
+			Convey("IsFollowing should show the unidirectional relation", func() {
+				Convey("It should be unidirectional between A and B", func() {
+					So(a.IsFollowing("b"), ShouldBeTrue)
+					So(b.IsFollowing("a"), ShouldBeFalse)
+				})
+			})
 
-var _ = Suite(&UserModelFollowingSuite{})
+			Convey("AddFollowing should be unidirectional", func() {
+				Convey("Directionality should be evident", func() {
+					So(a.Following, ShouldResemble, []string{"b"})
+					So(b.Followers, ShouldResemble, []string{"a"})
+					So(a.Followers, ShouldBeNil)
+					So(b.Following, ShouldBeNil)
+				})
+			})
 
-func (s *UserModelFollowingSuite) TestIsFollowing(c *C) {
-	// IsFollowing returns true only if the user is following username.
-	c.Assert(s.a.IsFollowing("b"), Equals, true)
-	c.Assert(s.a.IsFollowing("c"), Equals, false)
-}
+			Convey("When removing followers", func() {
+				Convey("Should not panic removing non-following users", func() {
+					c := User{Username: "c"}
+					a.RemoveFollowing(&c)
+				})
 
-func (s *UserModelFollowingSuite) TestAddFollowing(c *C) {
-	// Following shows for both users.
-	c.Assert(s.a.Following, DeepEquals, []string{"b"})
-	c.Assert(s.b.Followers, DeepEquals, []string{"a"})
+				Convey("Will remove following for both users", func() {
+					a.RemoveFollowing(&b)
 
-	// Following is unidirectional.
-	c.Assert(s.a.Followers, IsNil)
-	c.Assert(s.b.Following, IsNil)
-}
+					Convey("Removing should work on both A and B", func() {
+						So(a.Followers, ShouldBeEmpty)
+						So(a.Following, ShouldBeEmpty)
+						So(b.Followers, ShouldBeEmpty)
+						So(b.Following, ShouldBeEmpty)
+					})
+				})
+			})
+		})
 
-func (s *UserModelFollowingSuite) TestRemoveFollowing(c *C) {
-	// Will not panic with non-following users
-	user := User{Username: "c"}
-	s.a.RemoveFollowing(&user)
+		Convey("Who are friends, and two other users who want to be", func() {
+			c, d := User{Username: "c"}, User{Username: "d"}
+			a.AddFriendship(&b)
+			c.RequestFriendship(&d)
 
-	// Will remove following for both users.
-	s.a.RemoveFollowing(&s.b)
-	c.Assert(s.a.Followers, HasLen, 0)
-	c.Assert(s.a.Following, HasLen, 0)
-	c.Assert(s.b.Followers, HasLen, 0)
-	c.Assert(s.b.Following, HasLen, 0)
-}
+			Convey("IsFriend should show the bidirectional relation", func() {
+				Convey("True between A and B", func() {
+					So(a.IsFriend("b"), ShouldBeTrue)
+					So(b.IsFriend("a"), ShouldBeTrue)
+				})
 
-type UserModelFriendSuite struct {
-	a User
-	b User
-	c User
-	d User
-}
+				Convey("False between non-friends", func() {
+					So(a.IsFriend("c"), ShouldBeFalse)
+				})
 
-func (s *UserModelFriendSuite) SetUpTest(c *C) {
-	s.a, s.b, s.c, s.d = User{Username: "a"}, User{Username: "b"}, User{Username: "c"}, User{Username: "d"}
-	s.a.AddFriendship(&s.b)
-	s.c.RequestFriendship(&s.d)
-}
+				Convey("False between pending friends", func() {
+					So(c.IsFriend("d"), ShouldBeFalse)
+				})
+			})
 
-var _ = Suite(&UserModelFollowingSuite{})
+			Convey("HasRequestedFriendship should show the bidirectional relation", func() {
+				Convey("It should be directional", func() {
+					So(c.HasRequestedFriendship("d"), ShouldBeTrue)
+					So(d.HasRequestedFriendship("c"), ShouldBeFalse)
+				})
 
-func (s *UserModelFriendSuite) TestIsFriend(c *C) {
-	// True for friends
-	c.Assert(s.a.IsFriend("b"), Equals, true)
+				Convey("It should be alse for friends", func() {
+					So(a.HasRequestedFriendship("b"), ShouldBeFalse)
+				})
 
-	// False for non-friends
-	c.Assert(s.a.IsFriend("c"), Equals, false)
+				Convey("It should be false for non-friends", func() {
+					So(a.HasRequestedFriendship("c"), ShouldBeFalse)
+				})
+			})
 
-	// False for pending friendship
-	c.Assert(s.c.IsFriend("d"), Equals, false)
-}
+			Convey("RequestFriendship should create a requested relation", func() {
+				e := User{Username: "e"}
 
-func (s *UserModelFriendSuite) TestHasRequestedFriendship(c *C) {
-	// True when one has requested friendship of another
-	c.Assert(s.c.HasRequestedFriendship("d"), Equals, true)
+				Convey("Adds a friendship request", func() {
+					e.RequestFriendship(&a)
 
-	// False in the other direction
-	c.Assert(s.d.HasRequestedFriendship("c"), Equals, false)
+					So(e.HasRequestedFriendship("a"), ShouldBeTrue)
+				})
 
-	// False for friends
-	c.Assert(s.a.HasRequestedFriendship("b"), Equals, false)
+				Convey("Ignores friends", func() {
+					a.RequestFriendship(&b)
+					So(a.HasRequestedFriendship("b"), ShouldBeFalse)
+				})
 
-	// False for non-friends
-	c.Assert(s.a.HasRequestedFriendship("c"), Equals, false)
-}
+				Convey("Does not duplicate requests", func() {
+					So(c.FriendshipsRequested, ShouldResemble, []string{"d"})
+					So(d.FriendRequests, ShouldResemble, []string{"c"})
+					c.RequestFriendship(&d)
+					So(c.FriendshipsRequested, ShouldResemble, []string{"d"})
+					So(d.FriendRequests, ShouldResemble, []string{"c"})
+				})
+				
+				Convey("Allows requests going the other way", func() {
+					d.RequestFriendship(&c)
+					So(d.HasRequestedFriendship("c"), ShouldBeTrue)
+				})
+			})
 
-func (s *UserModelFriendSuite) TestRequestFriendship(c *C) {
-	user := User{Username: "e"}
+			Convey("RemoveFriendshipRequest should remove a request", func() {
+				So(a.HasRequestedFriendship("b"), ShouldBeFalse)
+				So(c.HasRequestedFriendship("d"), ShouldBeTrue)
+				So(d.HasRequestedFriendship("c"), ShouldBeFalse)
 
-	// Adds a friendship request
-	user.RequestFriendship(&s.a)
-	c.Assert(user.HasRequestedFriendship("a"), Equals, true)
+				Convey("Ignores users without a request", func() {
+					a.RemoveFriendshipRequest(&b)
+					So(a.HasRequestedFriendship("b"), ShouldBeFalse)
+				})
 
-	// Ignores friends
-	s.a.RequestFriendship(&s.b)
-	c.Assert(user.HasRequestedFriendship("b"), Equals, false)
+				Convey("Ignores inverse", func() {
+					d.RemoveFriendshipRequest(&c)
+					So(d.HasRequestedFriendship("c"), ShouldBeFalse)
+					So(c.HasRequestedFriendship("d"), ShouldBeTrue)
+				})
 
-	// Does not duplicate requests
-	c.Assert(s.c.FriendshipsRequested, DeepEquals, []string{"d"})
-	c.Assert(s.d.FriendRequests, DeepEquals, []string{"c"})
-	s.c.RequestFriendship(&s.d)
-	c.Assert(s.c.FriendshipsRequested, DeepEquals, []string{"d"})
-	c.Assert(s.d.FriendRequests, DeepEquals, []string{"c"})
+				Convey("Removes friendship request", func() {
+					c.RemoveFriendshipRequest(&d)
+					So(c.HasRequestedFriendship("d"), ShouldBeFalse)
+					So(c.FriendshipsRequested, ShouldResemble, []string{})
+					So(d.FriendRequests, ShouldResemble, []string{})
+				})
+			})
 
-	// Allows requests going the other way
-	s.a.RequestFriendship(&user)
-	c.Assert(s.a.HasRequestedFriendship("e"), Equals, true)
-}
+			Convey("AddFriendship should confirm a friendship", func() {
+				Convey("Adds a friendship", func() {
+					c.AddFriendship(&d)
+					So(c.IsFriend("d"), ShouldBeTrue)
+					So(d.IsFriend("c"), ShouldBeTrue)
+					So(c.HasRequestedFriendship("d"), ShouldBeFalse)
+				})
 
-func (s *UserModelFriendSuite) TestRemoveFriendshipRequest(c *C) {
-	// Ignores non-friends
-	s.a.RemoveFriendshipRequest(&s.b)
-	c.Assert(s.a.HasRequestedFriendship("b"), Equals, false)
+				Convey("Ignores friends", func() {
+					a.AddFriendship(&b)
+					So(a.IsFriend("b"), ShouldBeTrue)
+					So(b.IsFriend("a"), ShouldBeTrue)
+					So(a.Friends, ShouldResemble, []string{"b"})
+					So(b.Friends, ShouldResemble, []string{"a"})
+				})
+			})
 
-	// Ignores inverse
-	s.d.RemoveFriendshipRequest(&s.c)
-	c.Assert(s.d.HasRequestedFriendship("c"), Equals, false)
-	c.Assert(s.c.HasRequestedFriendship("d"), Equals, true)
+			Convey("RemoveFriendship should remove a friendship", func() {
+				Convey("Removes a friendship", func() {
+					a.RemoveFriendship(&b)
+					So(a.IsFriend("b"), ShouldBeFalse)
+					So(b.IsFriend("a"), ShouldBeFalse)
+				})
 
-	// Removes friendship request
-	s.c.RemoveFriendshipRequest(&s.d)
-	c.Assert(s.c.HasRequestedFriendship("d"), Equals, false)
-	c.Assert(s.c.FriendshipsRequested, DeepEquals, []string{})
-	c.Assert(s.d.FriendRequests, DeepEquals, []string{})
-}
-
-func (s *UserModelFriendSuite) TestAddFriendship(c *C) {
-	// Adds friendship
-	s.c.AddFriendship(&s.d)
-	c.Assert(s.c.IsFriend("d"), Equals, true)
-	c.Assert(s.d.IsFriend("c"), Equals, true)
-	c.Assert(s.c.HasRequestedFriendship("d"), Equals, false)
-
-	// Ignores friends
-	s.a.AddFriendship(&s.b)
-	c.Assert(s.a.IsFriend("b"), Equals, true)
-	c.Assert(s.b.IsFriend("a"), Equals, true)
-}
-
-func (s *UserModelFriendSuite) TestRemoveFriendship(c *C) {
-	// Removes friendship
-	s.a.RemoveFriendship(&s.b)
-	c.Assert(s.a.IsFriend("b"), Equals, false)
-	c.Assert(s.b.IsFriend("a"), Equals, false)
-
-	// Ignores non-friends
-	s.c.RemoveFriendship(&s.d)
-	c.Assert(s.c.IsFriend("d"), Equals, false)
-	c.Assert(s.d.IsFriend("c"), Equals, false)
+				Convey("Ignores non-friends", func() {
+					c.RemoveFriendship(&d)
+					So(c.IsFriend("d"), ShouldBeFalse)
+					So(d.IsFriend("c"), ShouldBeFalse)
+				})
+			})
+		})
+	})
 }
