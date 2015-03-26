@@ -2,7 +2,7 @@
 
 {{.Entity.RenderedContent}}
 
-{{if eq .User.Model.Username .Entity.Owner}}
+{{if .IsOwner}}
 	<form action="/post/delete" method="post">
 		<input type="hidden" name="_csrf_token" value="{{.CSRF}}" />
 		<input type="hidden" name="entityId" value="{{.Entity.Id.Hex}}" />

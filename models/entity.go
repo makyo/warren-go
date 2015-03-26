@@ -34,6 +34,7 @@ func GetEntity(id string, db *mgo.Database) (Entity, error) {
 
 func NewEntity(contentType string, owner string, originalOwner string, isShare bool, title string, content string) Entity {
 	return Entity{
+		Id:            bson.NewObjectId(),
 		ContentType:   contentType,
 		Owner:         owner,
 		OriginalOwner: originalOwner,
@@ -46,9 +47,6 @@ func NewEntity(contentType string, owner string, originalOwner string, isShare b
 func (e *Entity) Save(db *mgo.Database) error {
 	e.updateRenderedContent()
 	e.updateIndexedContent()
-	if e.Id.Hex() == "" {
-		e.Id = bson.NewObjectId()
-	}
 	_, err := db.C("entities").UpsertId(e.Id, e)
 	return err
 }
@@ -63,4 +61,8 @@ func (e *Entity) updateIndexedContent() {
 
 func (e *Entity) Delete(db *mgo.Database) error {
 	return db.C("entities").RemoveId(e.Id)
+}
+
+func (e *Entity) BelongsToUser(user User) bool {
+	return e.Owner == user.Username
 }

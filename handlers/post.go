@@ -33,6 +33,7 @@ func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request, l *log.Lo
 		"Flashes": h.flashes(r, w),
 		"CSRF":    h.session.Values["_csrf_token"],
 		"Entity":  entity,
+		"IsOwner": entity.BelongsToUser(h.user.Model),
 	})
 }
 
@@ -54,7 +55,7 @@ func (h *Handlers) DeletePost(w http.ResponseWriter, r *http.Request, l *log.Log
 		http.Error(w, "Post not found", http.StatusNotFound)
 		return
 	}
-	if entity.Owner != h.user.Model.Username {
+	if !entity.BelongsToUser(h.user.Model) {
 		http.Error(w, "Permission denied, you may only delete your own posts", http.StatusForbidden)
 		return
 	}
