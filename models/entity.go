@@ -5,8 +5,12 @@
 package models
 
 import (
+	"fmt"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
+	"github.com/warren-community/warren/contenttype"
 )
 
 type Entity struct {
@@ -45,18 +49,48 @@ func NewEntity(contentType string, owner string, originalOwner string, isShare b
 }
 
 func (e *Entity) Save(db *mgo.Database) error {
-	e.updateRenderedContent()
-	e.updateIndexedContent()
-	_, err := db.C("entities").UpsertId(e.Id, e)
+	err := e.updateRenderedContent(false)
+	if err != nil {
+		return err
+	}
+	err = e.updateIndexedContent(false)
+	if err != nil {
+		return err
+	}
+	_, err = db.C("entities").UpsertId(e.Id, e)
 	return err
 }
 
-func (e *Entity) updateRenderedContent() {
-	e.RenderedContent = e.Content
+func (e *Entity) updateRenderedContent(allowUnsafe bool) error {
+	ct, ok := contenttype.Registry[e.ContentType]
+	if !ok {
+		ct = contenttype.DefaultContentType
+	}
+	if !allowUnsafe && !ct.Safe() {
+		return fmt.Errorf("Attempted unsafe content-type usage: %s", e.ContentType)
+	}
+	rendered, err := ct.RenderDisplayContent(e.Content)
+	if err != nil {
+		return err
+	}
+	e.RenderedContent = rendered
+	return nil
 }
 
-func (e *Entity) updateIndexedContent() {
-	e.IndexedContent = e.Content
+func (e *Entity) updateIndexedContent(allowUnsafe bool) error {
+	ct, ok := contenttype.Registry[e.ContentType]
+	if !ok {
+		ct = contenttype.DefaultContentType
+	}
+	if !allowUnsafe && !ct.Safe() {
+		return fmt.Errorf("Attempted unsafe content-type usage: %s", e.ContentType)
+	}
+	rendered, err := ct.RenderIndexContent(e.Content)
+	if err != nil {
+		return err
+	}
+	e.IndexedContent = rendered
+	return nil
 }
 
 func (e *Entity) Delete(db *mgo.Database) error {
