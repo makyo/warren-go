@@ -14,6 +14,7 @@ func init() {
 }
 
 /* Flash handling ---------------------------------------------------------- */
+// Store a flash message with a CSS class for bootstrap.
 type Flash struct {
 	Class   string
 	Message string
@@ -31,6 +32,7 @@ func NewFlash(message string, class ...string) Flash {
 	}
 }
 
+// Retrieve flashes, wiping them from the session if they exist.
 func (h *Handlers) flashes(r *http.Request, w http.ResponseWriter) []interface{} {
 	flashes := h.session.Flashes()
 	if len(flashes) > 0 {

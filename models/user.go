@@ -10,6 +10,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// A representation of a user in the database, storing only minimal
+// information.
 type User struct {
 	Username             string
 	Email                string
@@ -21,12 +23,26 @@ type User struct {
 	FriendshipsRequested []string
 }
 
+// Save a given user model to the database.
 func (u *User) Save(db *mgo.Database) error {
 	c := db.C("users")
 	_, err := c.Upsert(bson.M{"username": u.Username}, u)
 	return err
 }
 
+// Retrieve a user from the database given a username
+func GetUser(username string, db *mgo.Database) (User, error) {
+	var user User
+	c := db.C("users")
+	q := c.Find(bson.M{"username": username})
+	if c, err := q.Count(); c == 0 {
+		return user, err
+	}
+	err := q.One(&user)
+	return user, err
+}
+
+// Return true if the user is following another user by that username.
 func (u *User) IsFollowing(username string) bool {
 	for _, name := range u.Following {
 		if name == username {
@@ -36,6 +52,7 @@ func (u *User) IsFollowing(username string) bool {
 	return false
 }
 
+// Add a unidirectional following relationship between two users
 func (u *User) AddFollowing(user *User) {
 	if !u.IsFollowing(user.Username) {
 		u.Following = append(u.Following, user.Username)
@@ -43,6 +60,7 @@ func (u *User) AddFollowing(user *User) {
 	}
 }
 
+// Remove a following relationship between two users.
 func (u *User) RemoveFollowing(user *User) {
 	if u.IsFollowing(user.Username) {
 		for i, name := range u.Following {
@@ -60,6 +78,7 @@ func (u *User) RemoveFollowing(user *User) {
 	}
 }
 
+// Return true of the user is friends with the user by the given username.
 func (u *User) IsFriend(username string) bool {
 	for _, name := range u.Friends {
 		if name == username {
@@ -69,6 +88,8 @@ func (u *User) IsFriend(username string) bool {
 	return false
 }
 
+// Return true if the user has requested to be friends with the user by
+// the given username.
 func (u *User) HasRequestedFriendship(username string) bool {
 	for _, name := range u.FriendshipsRequested {
 		if name == username {
@@ -78,6 +99,7 @@ func (u *User) HasRequestedFriendship(username string) bool {
 	return false
 }
 
+// Create a friendship request between this user and the given user.
 func (u *User) RequestFriendship(user *User) {
 	if !u.HasRequestedFriendship(user.Username) && !u.IsFriend(user.Username) {
 		u.FriendshipsRequested = append(u.FriendshipsRequested, user.Username)
@@ -85,6 +107,7 @@ func (u *User) RequestFriendship(user *User) {
 	}
 }
 
+// Remove a friendship request between this user and the given user.
 func (u *User) RemoveFriendshipRequest(user *User) {
 	if user.HasRequestedFriendship(u.Username) {
 		fmt.Println("Found a request")
@@ -103,6 +126,8 @@ func (u *User) RemoveFriendshipRequest(user *User) {
 	}
 }
 
+// Add a bidirectional friendship relationship between the two users, removing
+// any pending requests if they exist.
 func (u *User) AddFriendship(user *User) {
 	if !u.IsFriend(user.Username) {
 		u.Friends = append(u.Friends, user.Username)
@@ -116,6 +141,7 @@ func (u *User) AddFriendship(user *User) {
 	}
 }
 
+// Remove a friendship relationship between the two users.
 func (u *User) RemoveFriendship(user *User) {
 	if u.IsFriend(user.Username) {
 		for i, name := range u.Friends {
@@ -131,15 +157,4 @@ func (u *User) RemoveFriendship(user *User) {
 			}
 		}
 	}
-}
-
-func GetUser(username string, db *mgo.Database) (User, error) {
-	var user User
-	c := db.C("users")
-	q := c.Find(bson.M{"username": username})
-	if c, err := q.Count(); c == 0 {
-		return user, err
-	}
-	err := q.One(&user)
-	return user, err
 }

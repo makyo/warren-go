@@ -5,7 +5,7 @@
 package handlers
 
 import (
-"fmt"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -13,6 +13,8 @@ import (
 	"github.com/makyo/warren-go/models"
 )
 
+// Provide authentication middleware that fetches the user from the database if
+// they are currently logged in.
 func (h *Handlers) AuthenticationMiddleware(w http.ResponseWriter, r *http.Request, l *log.Logger) {
 	auth := h.session.Values["authenticated"]
 	if auth == nil {
@@ -37,6 +39,8 @@ func (h *Handlers) AuthenticationMiddleware(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+// Provide cross-site request forgery protection through middleware, ensuring
+// that forms posted to the site contain the correct token.
 func (h *Handlers) CSRFMiddleware(w http.ResponseWriter, r *http.Request, l *log.Logger) {
 	token := h.session.Values["_csrf_token"]
 	if token == nil {

@@ -17,6 +17,7 @@ import (
 	"github.com/makyo/warren-go/models"
 )
 
+// Display a login form (or redirect if the user is already logged in).
 func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log.Logger, render render.Render) {
 	if h.user.IsAuthenticated {
 		h.session.AddFlash(NewFlash("Already logged in!"))
@@ -32,6 +33,7 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 	})
 }
 
+// Log the user in.
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, log *log.Logger) {
 	if h.user.IsAuthenticated {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -61,6 +63,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, log *log.Logger
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+// Log the user out.
 func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 	h.session.Values["authenticated"] = false
 	h.session.Values["username"] = nil
@@ -68,6 +71,7 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+// Display a registration form (or redirect if the user is already logged in).
 func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, render render.Render) {
 	if h.user.IsAuthenticated {
 		h.session.AddFlash(NewFlash("Already logged in!"))
@@ -83,6 +87,7 @@ func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, rende
 	})
 }
 
+// Register a new user.
 func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
 	if h.user.IsAuthenticated {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -134,10 +139,12 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
+// TODO Confirm a user's email address.
 func (h *Handlers) Confirm(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
 
+// Display a user's profile page.
 func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params, render render.Render) {
 	username := params["username"]
 	var user models.User
@@ -169,6 +176,7 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 	})
 }
 
+// Attempt to follow a user from the logged-in account.
 func (h *Handlers) FollowUser(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
 	username := params["username"]
 	user, err := models.GetUser(username, h.db)
@@ -189,6 +197,7 @@ func (h *Handlers) FollowUser(w http.ResponseWriter, r *http.Request, l *log.Log
 	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
+// Attempt to unfollow a user from from the logged-in account.
 func (h *Handlers) UnfollowUser(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
 	username := params["username"]
 	user, err := models.GetUser(username, h.db)
@@ -209,6 +218,7 @@ func (h *Handlers) UnfollowUser(w http.ResponseWriter, r *http.Request, l *log.L
 	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
+// Attempt to request a friendship with a user from the logged-in account.
 func (h *Handlers) RequestFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
 	username := params["username"]
 	user, err := models.GetUser(username, h.db)
@@ -229,6 +239,7 @@ func (h *Handlers) RequestFriendship(w http.ResponseWriter, r *http.Request, l *
 	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
+// Display currently pending friendship requests for the logged-in account.
 func (h *Handlers) DisplayFriendshipRequests(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params, render render.Render) {
 	if !h.user.IsAuthenticated {
 		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
@@ -248,6 +259,7 @@ func (h *Handlers) DisplayFriendshipRequests(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+// Confirm a friendship request.
 func (h *Handlers) ConfirmFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
 	username := params["username"]
 	user, err := models.GetUser(username, h.db)
@@ -268,6 +280,7 @@ func (h *Handlers) ConfirmFriendship(w http.ResponseWriter, r *http.Request, l *
 	http.Redirect(w, r, fmt.Sprintf("/~%s", username), http.StatusSeeOther)
 }
 
+// Reject a friendship request.
 func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
 	username := params["username"]
 	user, err := models.GetUser(username, h.db)
@@ -288,6 +301,7 @@ func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request, l *l
 	http.Redirect(w, r, fmt.Sprintf("/~%s/friend/requests", h.user.Model.Username), http.StatusSeeOther)
 }
 
+// Remove a friendship between two accounts.
 func (h *Handlers) CancelFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params) {
 	username := params["username"]
 	user, err := models.GetUser(username, h.db)

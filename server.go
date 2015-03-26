@@ -19,17 +19,19 @@ import (
 	"github.com/makyo/warren-go/handlers"
 )
 
+// Store Mongo connection information
 type Mongo struct {
 	Host string `yaml:"host"`
 	DB   string `yaml:"db"`
 }
 
+// Store ElasticSearch connection information
 type ElasticSearch struct {
-	Host  string `yaml:"host"`
-	Port  string `yaml:"port"`
-	Index string `yaml:"index"`
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
 }
 
+// Store the configuration information for the application.
 type Config struct {
 	EnvironmentType string        `yaml:"env-type"`
 	AuthKey         string        `yaml:"auth-key"`
@@ -44,6 +46,7 @@ var (
 	esConn *elastigo.Conn
 )
 
+// Initialize the app, connecting to outside services if necessary.
 func init() {
 	var config Config
 	file := os.Args[1]
@@ -73,6 +76,7 @@ func init() {
 	esConn.Port = config.ElasticSearch.Port
 }
 
+// Start the Martini webserver, initialize handlers, routes, and middleware.
 func main() {
 	m := martini.Classic()
 
