@@ -5,34 +5,42 @@
 	<dd>
 		{{range .DisplayUser.Following}}
 			<a href="/~{{urlquery .}}">{{.}}</a>
+		{{else}}
+			Not following any users.
 		{{end}}
 	</dd>
 	<dt>Followers</dt>
 	<dd>
 		{{range .DisplayUser.Followers}}
 			<a href="/~{{urlquery .}}">{{.}}</a>
+		{{else}}
+			No users following.
 		{{end}}
 	</dd>
 	<dt>Friends</dt>
 	<dd>
 		{{range .DisplayUser.Friends}}
 			<a href="/~{{urlquery .}}">{{.}}</a>
+		{{else}}
+			Not friends with any users.
 		{{end}}
 	</dd>
 </dl>
 
 {{if and .User.IsAuthenticated (ne .User.Model.Username .DisplayUser.Username)}}
 	{{if .IsFollowing}}
-		<form action="/~{{urlquery .DisplayUser.Username}}/unfollow" method="post">
+		<form action="/user/unfollow" method="post">
 			<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+			<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
 			<button class="btn btn-primary">
 				<span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
 				Unfollow
 			</button>
 		</form>
 	{{else}}
-		<form action="/~{{urlquery .DisplayUser.Username}}/follow" method="post">
+		<form action="/user/follow" method="post">
 			<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+			<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
 			<button class="btn btn-primary">
 				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
 				Follow
@@ -41,8 +49,9 @@
 	{{end}}
 
 	{{if .IsFriend}}
-		<form action="/~{{urlquery .DisplayUser.Username}}/friend/cancel" method="post">
+		<form action="/user/friend/cancel" method="post">
 			<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+			<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
 			<button class="btn btn-success">
 				<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
 				Unriend
@@ -51,15 +60,17 @@
 	{{else}}
 		{{if .HasRequestedFriendship}}
 			Friendship already requested!
-			<form action="/~{{urlquery .DisplayUser.Username}}/friend/confirm" method="post">
+			<form action="/user/friend/confirm" method="post">
 				<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+				<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
 				<button class="btn btn-success">
 					<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
 					Accept
 				</button>
 			</form>
-			<form action="/~{{urlquery .DisplayUser.Username}}/friend/reject" method="post">
+			<form action="/user/friend/reject" method="post">
 				<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+				<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
 				<button class="btn btn-danger">
 					<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
 					Reject
@@ -71,8 +82,9 @@
 					Friendship request pending
 				</button>
 			{{else}}
-				<form action="/~{{urlquery .DisplayUser.Username}}/friend/request" method="post">
+				<form action="/user/friend/request" method="post">
 					<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+					<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
 					<button class="btn btn-success">
 						<span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
 						Friend

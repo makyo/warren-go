@@ -6,15 +6,17 @@
 	{{end}}
 	<div class="col-sm-2">
 		<a href="/~{{urlquery $element}}">{{$element}}</a>
-		<form action="/~{{urlquery $element}}/friend/confirm" method="post">
+		<form action="/user/friend/confirm" method="post">
 			<input type="hidden" name="_csrf_token" value="{{$CSRF}}" />
+			<input type="hidden" name="username" value="{{$element}}" />
 			<button class="btn btn-success">
 				<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
 				Accept
 			</button>
 		</form>
-		<form action="/~{{urlquery $element}}/friend/reject" method="post">
+		<form action="/user/friend/reject" method="post">
 			<input type="hidden" name="_csrf_token" value="{{$CSRF}}" />
+			<input type="hidden" name="username" value="{{$element}}" />
 			<button class="btn btn-danger">
 				<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
 				Reject
