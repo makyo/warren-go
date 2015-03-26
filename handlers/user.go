@@ -11,7 +11,6 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
-	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/warren-community/warren/models"
@@ -51,7 +50,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, log *log.Logger
 		http.Error(w, "Could not search for user", http.StatusInternalServerError)
 		return
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Hashword), []byte(password)); err != nil {
+	if !user.Authenticate(password) {
 		h.session.AddFlash(NewFlash("Wrong username or password"))
 		h.session.Save(r, w)
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -124,16 +123,11 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/register", http.StatusSeeOther)
 		return
 	}
-	hashword, err := bcrypt.GenerateFromPassword([]byte(password), 0)
+	user, err := models.NewUser(username, email, password)
 	if err != nil {
 		log.Print(err.Error())
-		http.Error(w, "Could not generate hashword", http.StatusInternalServerError)
+		http.Error(w, "Could not generate user", http.StatusInternalServerError)
 		return
-	}
-	user := models.User{
-		Username: username,
-		Email:    email,
-		Hashword: string(hashword),
 	}
 	user.Save(h.db)
 	http.Redirect(w, r, "/login", http.StatusSeeOther)

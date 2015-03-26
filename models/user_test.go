@@ -3,10 +3,31 @@ package models
 import (
 	"testing"
 
+	"golang.org/x/crypto/bcrypt"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestUserModel(t *testing.T) {
+	Convey("Creating and authenticating user", t, func() {
+		user, err := NewUser("username", "email", "password")
+		So(err, ShouldBeNil)
+
+		Convey("User should have all fields properly set", func() {
+			So(user.Username, ShouldEqual, "username")
+			So(user.Email, ShouldEqual, "email")
+			// This should check that the hashword is valid
+			cost, err := bcrypt.Cost(user.Hashword)
+			So(err, ShouldBeNil)
+			So(cost, ShouldEqual, 10)
+		})
+
+		Convey("User should be able to authenticate given a password", func() {
+			So(user.Authenticate("password"), ShouldBeTrue)
+			So(user.Authenticate("bad-wolf"), ShouldBeFalse)
+		})
+	})
+
 	Convey("Given two users", t, func() {
 		a, b := User{Username: "a"}, User{Username: "b"}
 
@@ -104,7 +125,7 @@ func TestUserModel(t *testing.T) {
 					So(c.FriendshipsRequested, ShouldResemble, []string{"d"})
 					So(d.FriendRequests, ShouldResemble, []string{"c"})
 				})
-				
+
 				Convey("Allows requests going the other way", func() {
 					d.RequestFriendship(&c)
 					So(d.HasRequestedFriendship("c"), ShouldBeTrue)

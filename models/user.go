@@ -5,6 +5,7 @@
 package models
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -14,19 +15,12 @@ import (
 type User struct {
 	Username             string
 	Email                string
-	Hashword             string
+	Hashword             []byte
 	Following            []string
 	Followers            []string
 	Friends              []string
 	FriendRequests       []string
 	FriendshipsRequested []string
-}
-
-// Save a given user model to the database.
-func (u *User) Save(db *mgo.Database) error {
-	c := db.C("users")
-	_, err := c.Upsert(bson.M{"username": u.Username}, u)
-	return err
 }
 
 // Retrieve a user from the database given a username
@@ -39,6 +33,32 @@ func GetUser(username string, db *mgo.Database) (User, error) {
 	}
 	err := q.One(&user)
 	return user, err
+}
+
+func NewUser(username string, email string, password string) (User, error) {
+	hashword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	if err != nil {
+		return User{}, err
+	}
+	return User{
+		Username: username,
+		Email:    email,
+		Hashword: hashword,
+	}, nil
+}
+
+// Save a given user model to the database.
+func (u *User) Save(db *mgo.Database) error {
+	c := db.C("users")
+	_, err := c.Upsert(bson.M{"username": u.Username}, u)
+	return err
+}
+
+func (u *User) Authenticate(password string) bool {
+	if err := bcrypt.CompareHashAndPassword(u.Hashword, []byte(password)); err != nil {
+		return false
+	}
+	return true
 }
 
 // Return true if the user is following another user by that username.
