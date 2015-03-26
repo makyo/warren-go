@@ -26,8 +26,7 @@ type User struct {
 // Retrieve a user from the database given a username
 func GetUser(username string, db *mgo.Database) (User, error) {
 	var user User
-	c := db.C("users")
-	q := c.Find(bson.M{"username": username})
+	q := db.C("users").Find(bson.M{"username": username})
 	if c, err := q.Count(); c == 0 {
 		return user, err
 	}
@@ -49,8 +48,7 @@ func NewUser(username string, email string, password string) (User, error) {
 
 // Save a given user model to the database.
 func (u *User) Save(db *mgo.Database) error {
-	c := db.C("users")
-	_, err := c.Upsert(bson.M{"username": u.Username}, u)
+	_, err := db.C("users").Upsert(bson.M{"username": u.Username}, u)
 	return err
 }
 

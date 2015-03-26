@@ -1,0 +1,14 @@
+<blockquote>by <a href="/~{{urlquery .Entity.Owner}}">{{.Entity.Owner}}</a></blockquote>
+
+{{.Entity.RenderedContent}}
+
+{{if eq .User.Model.Username .Entity.Owner}}
+	<form action="/post/delete" method="post">
+		<input type="hidden" name="_csrf_token" value="{{.CSRF}}" />
+		<input type="hidden" name="entityId" value="{{.Entity.Id.Hex}}" />
+		<button class="btn btn-danger">
+			<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+			Delete post
+		</button>
+	</form>
+{{end}}
