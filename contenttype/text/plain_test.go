@@ -1,3 +1,7 @@
+// Copyright 2015 The Warren Authors
+// Use of this source code is governed by an MIT license that can be found in
+// the LICENSE file.
+
 package text
 
 import (
@@ -21,7 +25,10 @@ func TestTextPlainContentType(t *testing.T) {
 		})
 
 		Convey("Should add linebreaks for display", func() {
-			content, err := ct.RenderDisplayContent("bad\r\n\r\nwolf\r\n42")
+			content, err := ct.RenderDisplayContent(`bad
+
+wolf
+42`)
 			So(content, ShouldEqual, `<p>bad</p><p>wolf<br />42</p>`)
 			So(err, ShouldBeNil)
 		})

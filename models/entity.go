@@ -13,6 +13,9 @@ import (
 	"github.com/warren-community/warren/contenttype"
 )
 
+// An entity represents a post to be displayed on the site.  It has an
+// associated content type, is associated with an owner, and may be a share
+// of a previous post.
 type Entity struct {
 	Id              bson.ObjectId `bson:"_id"`
 	ContentType     string
@@ -26,6 +29,7 @@ type Entity struct {
 	Assets          []bson.ObjectId
 }
 
+// Retrive an entity given an ID
 func GetEntity(id string, db *mgo.Database) (Entity, error) {
 	var entity Entity
 	q := db.C("entities").FindId(bson.ObjectIdHex(id))
@@ -36,6 +40,7 @@ func GetEntity(id string, db *mgo.Database) (Entity, error) {
 	return entity, err
 }
 
+// Create a new entity with a new ID.
 func NewEntity(contentType string, owner string, originalOwner string, isShare bool, title string, content string) Entity {
 	return Entity{
 		Id:            bson.NewObjectId(),
@@ -48,6 +53,8 @@ func NewEntity(contentType string, owner string, originalOwner string, isShare b
 	}
 }
 
+// Save the current entity in the database, generating display and index
+// content in the process
 func (e *Entity) Save(db *mgo.Database) error {
 	err := e.updateRenderedContent(false)
 	if err != nil {
@@ -61,6 +68,7 @@ func (e *Entity) Save(db *mgo.Database) error {
 	return err
 }
 
+// Render the content using the content type renderer for display.
 func (e *Entity) updateRenderedContent(allowUnsafe bool) error {
 	ct, ok := contenttype.Registry[e.ContentType]
 	if !ok {
@@ -77,6 +85,7 @@ func (e *Entity) updateRenderedContent(allowUnsafe bool) error {
 	return nil
 }
 
+// Render the content using the content type renderer for indexing.
 func (e *Entity) updateIndexedContent(allowUnsafe bool) error {
 	ct, ok := contenttype.Registry[e.ContentType]
 	if !ok {
@@ -93,10 +102,12 @@ func (e *Entity) updateIndexedContent(allowUnsafe bool) error {
 	return nil
 }
 
+// Delete an entity from the database
 func (e *Entity) Delete(db *mgo.Database) error {
 	return db.C("entities").RemoveId(e.Id)
 }
 
+// Determine whether or not the entity belongs to the user.
 func (e *Entity) BelongsToUser(user User) bool {
 	return e.Owner == user.Username
 }
