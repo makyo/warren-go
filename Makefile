@@ -16,6 +16,9 @@ help:
 	@echo "  install - Install the application in your GOPATH"
 	@echo "  clean - clean the project"
 
+$(GOPATH)/bin.godeps:
+	go get -v launchpad.net/godeps
+
 deps: $(GOPATH)/bin/godeps
 	go get -v github.com/codegangsta/gin/... github.com/smartystreets/goconvey/...
 	$(GOPATH)/bin/godeps -u dependencies.tsv

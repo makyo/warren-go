@@ -35,15 +35,12 @@ func GetUser(username string, db *mgo.Database) (User, error) {
 }
 
 func NewUser(username string, email string, password string) (User, error) {
-	hashword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
-	if err != nil {
-		return User{}, err
-	}
-	return User{
+	user := User{
 		Username: username,
 		Email:    email,
-		Hashword: hashword,
-	}, nil
+	}
+	err := user.SetPassword(password)
+	return user, err
 }
 
 // Save a given user model to the database.
@@ -60,13 +57,37 @@ func (u *User) Authenticate(password string) bool {
 	return true
 }
 
+// Set a password for the given user.
+func (u *User) SetPassword(password string) error {
+	hashword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	if err != nil {
+		return err
+	}
+	u.Hashword = hashword
+	return nil
+}
+
 // Fetch all given entities for a user
 // XXX This is a naive and expensive approach
 func (u *User) Entities(db *mgo.Database) ([]Entity, error) {
 	var result []Entity
-	q := db.C("entities").Find(bson.M{"owner": u.Username})
+	q := db.C("entities").Find(bson.M{
+		"owner":       u.Username,
+		"contenttype": bson.M{"$ne": "user/profile"},
+	})
 	err := q.All(&result)
 	return result, err
+}
+
+// Retrieve just the profile for the user.
+func (u *User) Profile(db *mgo.Database) (Entity, error) {
+	var profile Entity
+	q := db.C("entities").Find(bson.M{
+		"owner":       u.Username,
+		"contenttype": "user/profile",
+	})
+	err := q.One(&profile)
+	return profile, err
 }
 
 // Return true if the user is following another user by that username.

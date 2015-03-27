@@ -1,31 +1,38 @@
-<dl>
-	<dt>Username</dt>
-	<dd>{{.DisplayUser.Username}}</dd>
-	<dt>Following</dt>
-	<dd>
-		{{range .DisplayUser.Following}}
-			<a href="/~{{urlquery .}}">{{.}}</a>
-		{{else}}
-			Not following any users.
-		{{end}}
-	</dd>
-	<dt>Followers</dt>
-	<dd>
-		{{range .DisplayUser.Followers}}
-			<a href="/~{{urlquery .}}">{{.}}</a>
-		{{else}}
-			No users following.
-		{{end}}
-	</dd>
-	<dt>Friends</dt>
-	<dd>
-		{{range .DisplayUser.Friends}}
-			<a href="/~{{urlquery .}}">{{.}}</a>
-		{{else}}
-			Not friends with any users.
-		{{end}}
-	</dd>
-</dl>
+<div class="row">
+	<div class="col-sm-8">
+		{{.ProfileStr}}
+	</div>
+	<div class="col-sm-4">
+		<dl class="dl-horizontal">
+			<dt>Username</dt>
+			<dd>{{.DisplayUser.Username}}</dd>
+			<dt>Following</dt>
+			<dd>
+				{{range .DisplayUser.Following}}
+					<a href="/~{{urlquery .}}">{{.}}</a>
+				{{else}}
+					Not following any users.
+				{{end}}
+			</dd>
+			<dt>Followers</dt>
+			<dd>
+				{{range .DisplayUser.Followers}}
+					<a href="/~{{urlquery .}}">{{.}}</a>
+				{{else}}
+					No users following.
+				{{end}}
+			</dd>
+			<dt>Friends</dt>
+			<dd>
+				{{range .DisplayUser.Friends}}
+					<a href="/~{{urlquery .}}">{{.}}</a>
+				{{else}}
+					Not friends with any users.
+				{{end}}
+			</dd>
+		</dl>
+	</div>
+</div>
 
 {{if and .User.IsAuthenticated (ne .User.Model.Username .DisplayUser.Username)}}
 	{{if .IsFollowing}}
@@ -99,7 +106,7 @@
 {{if ne (len .Entities) 0}}
 	<ul>
 		{{range .Entities}}
-			<li><a href="/{{.Id.Hex}}">{{.Title}}</a></li>
+			<li><a href="/{{.Id.Hex}}">{{.Title}}</a> - {{.ContentType}}</li>
 		{{end}}
 	</ul>
 {{else}}

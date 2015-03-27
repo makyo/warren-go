@@ -6,6 +6,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -24,7 +25,7 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	render.HTML(200, "user/login", map[string]interface{}{
+	render.HTML(200, "user/displayLogin", map[string]interface{}{
 		"Title":   "Log in",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
@@ -78,7 +79,7 @@ func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, rende
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	render.HTML(200, "user/register", map[string]interface{}{
+	render.HTML(200, "user/displayRegister", map[string]interface{}{
 		"Title":   "Sign up",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
@@ -163,6 +164,18 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 		http.Error(w, "Could not fetch entities from database", http.StatusInternalServerError)
 		return
 	}
+	profile, err := user.Profile(h.db)
+	if err != nil {
+		if err.Error() == "not found" {
+			profile = models.Entity{
+				RenderedContent: "Profile not found",
+			}
+		} else {
+			l.Print(err.Error())
+			http.Error(w, "Could not fetch profile from database", http.StatusInternalServerError)
+			return
+		}
+	}
 	render.HTML(200, "user/displayUser", map[string]interface{}{
 		"Title":                  fmt.Sprintf("User %s", user.Username),
 		"User":                   h.user,
@@ -174,7 +187,97 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 		"FriendRequestPending":   h.user.Model.HasRequestedFriendship(user.Username),
 		"HasRequestedFriendship": user.HasRequestedFriendship(h.user.Model.Username),
 		"Entities":               entities,
+		"ProfileStr":             template.HTML(profile.RenderedContent),
 	})
+}
+
+// Display the page for editing profile and settings.
+func (h *Handlers) DisplayEditProfile(w http.ResponseWriter, r *http.Request, l *log.Logger, render render.Render) {
+	if !h.user.IsAuthenticated {
+		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	profile, err := h.user.Model.Profile(h.db)
+	if err != nil && err.Error() != "not found" {
+		l.Print(err.Error())
+		http.Error(w, "Could not load profile", http.StatusInternalServerError)
+		return
+	}
+	render.HTML(200, "user/displayEditProfile", map[string]interface{}{
+		"Title":      "Edit profile and settings",
+		"User":       h.user,
+		"Flashes":    h.flashes(r, w),
+		"CSRF":       h.session.Values["_csrf_token"],
+		"ProfileStr": profile.Content,
+	})
+}
+
+// Edit the profile information for a user.
+func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+	if !h.user.IsAuthenticated {
+		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	profileStr := r.FormValue("profile")
+	profile, err := h.user.Model.Profile(h.db)
+	if err != nil && err.Error() != "not found" {
+		l.Print(err.Error())
+		http.Error(w, "Error retrieving existing profile", http.StatusInternalServerError)
+		return
+	}
+	profile.Delete(h.db)
+	profile = models.NewEntity(
+		"user/profile",
+		h.user.Model.Username,
+		h.user.Model.Username,
+		false,
+		"",
+		profileStr,
+	)
+	profile.Save(h.db)
+	h.session.AddFlash(NewFlash("Profile updated!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, fmt.Sprintf("/~%s", h.user.Model.Username), http.StatusSeeOther)
+}
+
+// Edit the raw settings of a user (password, email).
+func (h *Handlers) EditSettings(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+	if !h.user.IsAuthenticated {
+		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	username, password, newpassword, newpasswordconfirm, email := r.FormValue("username"), r.FormValue("password"), r.FormValue("newpassword"), r.FormValue("newpasswordconfirm"), r.FormValue("email")
+	if username != h.user.Model.Username {
+		l.Print("User attempted to save to another profile")
+		http.Error(w, "Could not modify that user", http.StatusForbidden)
+		return
+	}
+	if !h.user.Model.Authenticate(password) {
+		h.session.AddFlash(NewFlash("Current password did not match!", "danger"))
+		h.session.Save(r, w)
+		http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
+		return
+	}
+	if newpassword != "" {
+		if newpassword != newpasswordconfirm {
+			h.session.AddFlash(NewFlash("New passwords did not match!", "danger"))
+			h.session.Save(r, w)
+			http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
+			return
+		}
+		h.user.Model.SetPassword(newpassword)
+	}
+	h.user.Model.Email = email
+	h.user.Model.Save(h.db)
+	h.session.AddFlash(NewFlash("Settings updated!", "success"))
+	h.session.Save(r, w)
+	http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
 }
 
 // Attempt to follow a user from the logged-in account.
