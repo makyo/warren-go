@@ -5,6 +5,8 @@ endif
 PROJECT := github.com/warren-community/warren
 PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
 
+all: check
+
 help:
 	@echo "Available targets:"
 	@echo "  deps - fetch all dependencies required"
@@ -16,7 +18,7 @@ help:
 	@echo "  install - Install the application in your GOPATH"
 	@echo "  clean - clean the project"
 
-$(GOPATH)/bin.godeps:
+$(GOPATH)/bin/godeps:
 	go get -v launchpad.net/godeps
 
 deps: $(GOPATH)/bin/godeps
