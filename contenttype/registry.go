@@ -6,6 +6,7 @@ package contenttype
 
 import (
 	"github.com/warren-community/warren/contenttype/text"
+	"github.com/warren-community/warren/contenttype/user"
 )
 
 // Default content type to be used when no content type is specified or no
@@ -18,4 +19,5 @@ var DefaultContentType = new(text.Plain)
 var Registry = map[string]ContentType{
 	"text/plain":    new(text.Plain),
 	"text/markdown": new(text.Markdown),
+	"user/profile":  new(user.Profile),
 }

@@ -26,6 +26,15 @@ func TestUserModel(t *testing.T) {
 			So(cost, ShouldEqual, 10)
 		})
 
+		Convey("Generates a new password", func() {
+			oldHashword := user.Hashword
+			user.SetPassword("wow!")
+			So(oldHashword, ShouldNotEqual, user.Hashword)
+			cost, err := bcrypt.Cost(user.Hashword)
+			So(err, ShouldBeNil)
+			So(cost, ShouldEqual, 10)
+		})
+
 		Convey("User should be able to authenticate given a password", func() {
 			So(user.Authenticate("password"), ShouldBeTrue)
 			So(user.Authenticate("bad-wolf"), ShouldBeFalse)
