@@ -5,10 +5,17 @@
 package models
 
 import (
+	"fmt"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
+	"github.com/warren-community/warren/contenttype"
 )
 
+// An entity represents a post to be displayed on the site.  It has an
+// associated content type, is associated with an owner, and may be a share
+// of a previous post.
 type Entity struct {
 	Id              bson.ObjectId `bson:"_id"`
 	ContentType     string
@@ -22,6 +29,7 @@ type Entity struct {
 	Assets          []bson.ObjectId
 }
 
+// Retrive an entity given an ID
 func GetEntity(id string, db *mgo.Database) (Entity, error) {
 	var entity Entity
 	q := db.C("entities").FindId(bson.ObjectIdHex(id))
@@ -32,6 +40,7 @@ func GetEntity(id string, db *mgo.Database) (Entity, error) {
 	return entity, err
 }
 
+// Create a new entity with a new ID.
 func NewEntity(contentType string, owner string, originalOwner string, isShare bool, title string, content string) Entity {
 	return Entity{
 		Id:            bson.NewObjectId(),
@@ -44,25 +53,61 @@ func NewEntity(contentType string, owner string, originalOwner string, isShare b
 	}
 }
 
+// Save the current entity in the database, generating display and index
+// content in the process
 func (e *Entity) Save(db *mgo.Database) error {
-	e.updateRenderedContent()
-	e.updateIndexedContent()
-	_, err := db.C("entities").UpsertId(e.Id, e)
+	err := e.updateRenderedContent(false)
+	if err != nil {
+		return err
+	}
+	err = e.updateIndexedContent(false)
+	if err != nil {
+		return err
+	}
+	_, err = db.C("entities").UpsertId(e.Id, e)
 	return err
 }
 
-func (e *Entity) updateRenderedContent() {
-	e.RenderedContent = e.Content
+// Render the content using the content type renderer for display.
+func (e *Entity) updateRenderedContent(allowUnsafe bool) error {
+	ct, ok := contenttype.Registry[e.ContentType]
+	if !ok {
+		ct = contenttype.DefaultContentType
+	}
+	if !allowUnsafe && !ct.Safe() {
+		return fmt.Errorf("Attempted unsafe content-type usage: %s", e.ContentType)
+	}
+	rendered, err := ct.RenderDisplayContent(e.Content)
+	if err != nil {
+		return err
+	}
+	e.RenderedContent = rendered
+	return nil
 }
 
-func (e *Entity) updateIndexedContent() {
-	e.IndexedContent = e.Content
+// Render the content using the content type renderer for indexing.
+func (e *Entity) updateIndexedContent(allowUnsafe bool) error {
+	ct, ok := contenttype.Registry[e.ContentType]
+	if !ok {
+		ct = contenttype.DefaultContentType
+	}
+	if !allowUnsafe && !ct.Safe() {
+		return fmt.Errorf("Attempted unsafe content-type usage: %s", e.ContentType)
+	}
+	rendered, err := ct.RenderIndexContent(e.Content)
+	if err != nil {
+		return err
+	}
+	e.IndexedContent = rendered
+	return nil
 }
 
+// Delete an entity from the database
 func (e *Entity) Delete(db *mgo.Database) error {
 	return db.C("entities").RemoveId(e.Id)
 }
 
+// Determine whether or not the entity belongs to the user.
 func (e *Entity) BelongsToUser(user User) bool {
 	return e.Owner == user.Username
 }

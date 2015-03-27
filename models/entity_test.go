@@ -7,16 +7,20 @@ package models
 import (
 	"testing"
 
+	"github.com/warren-community/warren/contenttype"
+	"github.com/warren-community/warren/contenttype/text"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestEntityModel(t *testing.T) {
 	Convey("Given an entity", t, func() {
-		e := NewEntity("type", "owner", "originalOwner", true, "title", "content")
+		contenttype.Registry["text/raw"] = new(text.Raw)
+		e := NewEntity("text/raw", "owner", "originalOwner", true, "title", "content")
 
 		Convey("The fields are created properly", func() {
 			So(e.Id.Valid(), ShouldBeTrue)
-			So(e.ContentType, ShouldEqual, "type")
+			So(e.ContentType, ShouldEqual, "text/raw")
 			So(e.Owner, ShouldEqual, "owner")
 			So(e.OriginalOwner, ShouldEqual, "originalOwner")
 			So(e.IsShare, ShouldBeTrue)
@@ -25,13 +29,24 @@ func TestEntityModel(t *testing.T) {
 		})
 
 		Convey("The rendered content can be created", func() {
-			e.updateRenderedContent()
+			err := e.updateRenderedContent(true)
 			So(e.RenderedContent, ShouldEqual, "content")
+			So(err, ShouldBeNil)
+		})
+
+		Convey("Rendering content checks for safety", func() {
+			err := e.updateRenderedContent(false)
+			So(e.RenderedContent, ShouldEqual, "")
+			So(err.Error(), ShouldResemble, "Attempted unsafe content-type usage: text/raw")
+			err = e.updateIndexedContent(false)
+			So(e.IndexedContent, ShouldEqual, "")
+			So(err.Error(), ShouldResemble, "Attempted unsafe content-type usage: text/raw")
 		})
 
 		Convey("The indexed content can be created", func() {
-			e.updateIndexedContent()
+			err := e.updateIndexedContent(true)
 			So(e.IndexedContent, ShouldEqual, "content")
+			So(err, ShouldBeNil)
 		})
 
 		Convey("Ownership can be asserted", func() {

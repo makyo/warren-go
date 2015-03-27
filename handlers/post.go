@@ -6,6 +6,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -34,6 +35,7 @@ func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request, l *log.Lo
 		"CSRF":    h.session.Values["_csrf_token"],
 		"Entity":  entity,
 		"IsOwner": entity.BelongsToUser(h.user.Model),
+		"Content": template.HTML(entity.RenderedContent),
 	})
 }
 
@@ -104,7 +106,7 @@ func (h *Handlers) CreatePost(w http.ResponseWriter, r *http.Request, l *log.Log
 		return
 	}
 	entity := models.NewEntity(
-		"", // TODO ContentType
+		r.FormValue("contentType"),
 		h.user.Model.Username,
 		h.user.Model.Username,
 		false, // Shared?

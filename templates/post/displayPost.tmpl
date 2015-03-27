@@ -1,6 +1,6 @@
 <blockquote>by <a href="/~{{urlquery .Entity.Owner}}">{{.Entity.Owner}}</a></blockquote>
 
-{{.Entity.RenderedContent}}
+{{.Content}}
 
 {{if .IsOwner}}
 	<form action="/post/delete" method="post">
