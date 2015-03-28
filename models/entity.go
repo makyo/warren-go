@@ -23,7 +23,7 @@ type Entity struct {
 	OriginalOwner   string
 	IsShare         bool
 	Title           string
-	Content         string
+	Content         interface{}
 	RenderedContent string
 	IndexedContent  string
 	Assets          []bson.ObjectId
@@ -41,7 +41,7 @@ func GetEntity(id string, db *mgo.Database) (Entity, error) {
 }
 
 // Create a new entity with a new ID.
-func NewEntity(contentType string, owner string, originalOwner string, isShare bool, title string, content string) Entity {
+func NewEntity(contentType string, owner string, originalOwner string, isShare bool, title string, content interface{}) Entity {
 	return Entity{
 		Id:            bson.NewObjectId(),
 		ContentType:   contentType,

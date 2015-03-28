@@ -14,11 +14,11 @@ func (c *Raw) Safe() bool {
 }
 
 // Simply returns the content.
-func (c *Raw) RenderDisplayContent(content string) (string, error) {
-	return content, nil
+func (c *Raw) RenderDisplayContent(content interface{}) (string, error) {
+	return content.(string), nil
 }
 
 // Simply returns the content.
-func (c *Raw) RenderIndexContent(content string) (string, error) {
-	return content, nil
+func (c *Raw) RenderIndexContent(content interface{}) (string, error) {
+	return content.(string), nil
 }

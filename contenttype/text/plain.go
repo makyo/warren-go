@@ -20,8 +20,8 @@ func (c *Plain) Safe() bool {
 
 // Sanitize the output, replace newlines with HTML line breaks, and return
 // the modified content.
-func (c *Plain) RenderDisplayContent(content string) (string, error) {
-	content = template.HTMLEscapeString(content)
+func (c *Plain) RenderDisplayContent(content interface{}) (string, error) {
+	contentStr := template.HTMLEscapeString(content.(string))
 	paraRe, err := regexp.Compile("\r?\n\r?\n")
 	if err != nil {
 		return "", err
@@ -30,12 +30,12 @@ func (c *Plain) RenderDisplayContent(content string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	content = string(paraRe.ReplaceAll([]byte(content), []byte("</p><p>")))
-	content = string(breakRe.ReplaceAll([]byte(content), []byte("<br />")))
-	return fmt.Sprintf("<p>%s</p>", content), nil
+	content = string(paraRe.ReplaceAll([]byte(contentStr), []byte("</p><p>")))
+	content = string(breakRe.ReplaceAll([]byte(contentStr), []byte("<br />")))
+	return fmt.Sprintf("<p>%s</p>", contentStr), nil
 }
 
 // Simply return the content.
-func (c *Plain) RenderIndexContent(content string) (string, error) {
-	return content, nil
+func (c *Plain) RenderIndexContent(content interface{}) (string, error) {
+	return content.(string), nil
 }

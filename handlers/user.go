@@ -14,6 +14,7 @@ import (
 	"github.com/martini-contrib/render"
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/warren-community/warren/contenttype/user"
 	"github.com/warren-community/warren/models"
 )
 
@@ -205,12 +206,17 @@ func (h *Handlers) DisplayEditProfile(w http.ResponseWriter, r *http.Request, l 
 		http.Error(w, "Could not load profile", http.StatusInternalServerError)
 		return
 	}
+	content := user.Profile{}
+	if profile.Content != nil {
+		content = user.NewProfile(profile.Content.(bson.M))
+	}
 	render.HTML(200, "user/displayEditProfile", map[string]interface{}{
 		"Title":      "Edit profile and settings",
 		"User":       h.user,
 		"Flashes":    h.flashes(r, w),
 		"CSRF":       h.session.Values["_csrf_token"],
-		"ProfileStr": profile.Content,
+		"ProfileStr": content.ProfileText,
+		"Website":    content.Website,
 	})
 }
 
@@ -222,7 +228,7 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Lo
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	profileStr := r.FormValue("profile")
+	profileStr, website := r.FormValue("profile"), r.FormValue("website")
 	profile, err := h.user.Model.Profile(h.db)
 	if err != nil && err.Error() != "not found" {
 		l.Print(err.Error())
@@ -236,7 +242,10 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Lo
 		h.user.Model.Username,
 		false,
 		"",
-		profileStr,
+		user.Profile{
+			ProfileText: profileStr,
+			Website:     website,
+		},
 	)
 	profile.Save(h.db)
 	h.session.AddFlash(NewFlash("Profile updated!", "success"))

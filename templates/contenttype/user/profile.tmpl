@@ -1,0 +1,11 @@
+<div class="well well-sm">
+	{{.ProfileText}}
+</div>
+<dl>
+	<dt>Website</dt>
+	<dd>
+		{{if .Website}}
+			<a href="{{.Website}}" target="_blank">{{.Website}} <span class="glyphicon glyphicon-share" aria-hidden="true"></span></a>
+		{{end}}
+	</dd>
+</dl>
