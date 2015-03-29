@@ -2,11 +2,13 @@ package user
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/warren-community/warren/contenttype/text"
+	"github.com/warren-community/warren/utils"
 )
 
 type Profile struct {
@@ -46,7 +48,11 @@ func (c *Profile) RenderDisplayContent(content interface{}) (string, error) {
 	profile := content.(Profile)
 	profileText := template.HTML(text.RenderMarkdown(profile.ProfileText))
 	buf := new(bytes.Buffer)
-	tmpl := template.Must(template.ParseFiles("templates/contenttype/user/profile.tmpl"))
+	td, err := utils.GetTemplateDir()
+	if err != nil {
+		return "", err
+	}
+	tmpl := template.Must(template.ParseFiles(fmt.Sprintf("%s/templates/contenttype/user/profile.tmpl", td)))
 	tmpl.Execute(buf, map[string]interface{}{
 		"ProfileText": profileText,
 		"Website":     profile.Website,

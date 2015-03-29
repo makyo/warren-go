@@ -49,6 +49,24 @@ func TestEntityModel(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 
+		Convey("A default content type can be used", func() {
+			e.ContentType = "asdf/bad-wolf"
+			err := e.updateRenderedContent(false)
+			So(err, ShouldBeNil)
+			So(e.RenderedContent, ShouldEqual, "<pre>content</pre>")
+			err = e.updateIndexedContent(false)
+			So(err, ShouldBeNil)
+			So(e.IndexedContent, ShouldEqual, "content")
+		})
+
+		Convey("Errors are passed from content types", func() {
+			e.ContentType = "test/error"
+			err := e.updateRenderedContent(true)
+			So(err.Error(), ShouldResemble, "Error")
+			err = e.updateIndexedContent(true)
+			So(err.Error(), ShouldResemble, "Error")
+		})
+
 		Convey("Ownership can be asserted", func() {
 			owner := User{Username: "owner"}
 			notOwner := User{Username: "bad-wolf"}
