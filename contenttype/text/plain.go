@@ -7,7 +7,6 @@ package text
 import (
 	"fmt"
 	"html/template"
-	"regexp"
 )
 
 // The text/plain content type.
@@ -22,17 +21,7 @@ func (c *Plain) Safe() bool {
 // the modified content.
 func (c *Plain) RenderDisplayContent(content interface{}) (string, error) {
 	contentStr := template.HTMLEscapeString(content.(string))
-	paraRe, err := regexp.Compile("\r?\n\r?\n")
-	if err != nil {
-		return "", err
-	}
-	breakRe, err := regexp.Compile("\r?\n")
-	if err != nil {
-		return "", err
-	}
-	content = string(paraRe.ReplaceAll([]byte(contentStr), []byte("</p><p>")))
-	content = string(breakRe.ReplaceAll([]byte(contentStr), []byte("<br />")))
-	return fmt.Sprintf("<p>%s</p>", contentStr), nil
+	return fmt.Sprintf("<pre>%s</pre>", contentStr), nil
 }
 
 // Simply return the content.

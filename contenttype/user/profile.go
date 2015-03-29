@@ -11,12 +11,26 @@ import (
 
 type Profile struct {
 	ProfileText string
+	Pronouns    string
 	Website     string
 }
 
+// Create a new Profile object from a mongo result.
 func NewProfile(in bson.M) Profile {
+	fields := []string{
+		"profiletext",
+		"pronouns",
+		"website",
+	}
+	for _, field := range fields {
+		_, ok := in[field]
+		if !ok {
+			in[field] = ""
+		}
+	}
 	return Profile{
 		ProfileText: in["profiletext"].(string),
+		Pronouns:    in["pronouns"].(string),
 		Website:     in["website"].(string),
 	}
 }
@@ -36,11 +50,12 @@ func (c *Profile) RenderDisplayContent(content interface{}) (string, error) {
 	tmpl.Execute(buf, map[string]interface{}{
 		"ProfileText": profileText,
 		"Website":     profile.Website,
+		"Pronouns":    profile.Pronouns,
 	})
 	return buf.String(), nil
 }
 
-// Simply return the markdown content.
+// Simply return the profile text content.
 func (c *Profile) RenderIndexContent(content interface{}) (string, error) {
 	return (content.(Profile)).ProfileText, nil
 }

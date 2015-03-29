@@ -2,6 +2,10 @@
 	{{.ProfileText}}
 </div>
 <dl>
+	{{if .Pronouns}}
+		<dt>Pronouns</dt>
+		<dd>{{.Pronouns}}</dd>
+	{{end}}
 	<dt>Website</dt>
 	<dd>
 		{{if .Website}}

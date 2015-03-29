@@ -20,7 +20,7 @@ func TestTextPlainContentType(t *testing.T) {
 
 		Convey("Should sanitize html for display", func() {
 			content, err := ct.RenderDisplayContent(`<img src="foo" />`)
-			So(content, ShouldEqual, `<p>&lt;img src=&#34;foo&#34; /&gt;</p>`)
+			So(content, ShouldEqual, `<pre>&lt;img src=&#34;foo&#34; /&gt;</pre>`)
 			So(err, ShouldBeNil)
 		})
 
@@ -29,7 +29,10 @@ func TestTextPlainContentType(t *testing.T) {
 
 wolf
 42`)
-			So(content, ShouldEqual, `<p>bad</p><p>wolf<br />42</p>`)
+			So(content, ShouldEqual, `<pre>bad
+
+wolf
+42</pre>`)
 			So(err, ShouldBeNil)
 		})
 

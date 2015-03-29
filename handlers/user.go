@@ -169,7 +169,7 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 	if err != nil {
 		if err.Error() == "not found" {
 			profile = models.Entity{
-				RenderedContent: "Profile not found",
+				RenderedContent: fmt.Sprintf("%s hasn't created a profile yet.", username),
 			}
 		} else {
 			l.Print(err.Error())
@@ -216,6 +216,7 @@ func (h *Handlers) DisplayEditProfile(w http.ResponseWriter, r *http.Request, l 
 		"Flashes":    h.flashes(r, w),
 		"CSRF":       h.session.Values["_csrf_token"],
 		"ProfileStr": content.ProfileText,
+		"Pronouns":   content.Pronouns,
 		"Website":    content.Website,
 	})
 }
@@ -228,7 +229,7 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Lo
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	profileStr, website := r.FormValue("profile"), r.FormValue("website")
+	profileStr, website, pronouns := r.FormValue("profile"), r.FormValue("website"), r.FormValue("pronouns")
 	profile, err := h.user.Model.Profile(h.db)
 	if err != nil && err.Error() != "not found" {
 		l.Print(err.Error())
@@ -244,6 +245,7 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Lo
 		"",
 		user.Profile{
 			ProfileText: profileStr,
+			Pronouns:    pronouns,
 			Website:     website,
 		},
 	)

@@ -1,0 +1,22 @@
+{
+  "name": "warren",
+  "version": "1.0.0",
+  "description": "Warren is a networked content-sharing site",
+  "dependencies": {
+    "coffee-script": "^1.9.1"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/warren-community/warren.git"
+  },
+  "author": "The Warren Authors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/warren-community/warren/issues"
+  },
+  "homepage": "https://github.com/warren-community/warren"
+}

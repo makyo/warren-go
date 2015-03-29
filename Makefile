@@ -5,7 +5,7 @@ endif
 PROJECT := github.com/warren-community/warren
 PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
 
-all: check
+NODE_TARGETS=node_modules/coffee_script
 
 help:
 	@echo "Available targets:"
@@ -18,8 +18,16 @@ help:
 	@echo "  install - Install the application in your GOPATH"
 	@echo "  clean - clean the project"
 
+$(NODE_TARGETS): package.json
+	npm install
+
 $(GOPATH)/bin/godeps:
 	go get -v launchpad.net/godeps
+
+coffee: $(NODE_TARGETS)
+	node_modules/coffee-script/bin/coffee -o public/js -cw public/coffee
+
+ifeq ($(CURDIR),$(PROJECT_DIR))
 
 deps: $(GOPATH)/bin/godeps
 	go get -v github.com/codegangsta/gin/... github.com/smartystreets/goconvey/...
@@ -28,9 +36,10 @@ deps: $(GOPATH)/bin/godeps
 create-deps: $(GOPATH)/bin/godeps
 	godeps -t $(shell go list $(PROJECT)/...) > dependencies.tsv || true
 
-ifeq ($(CURDIR),$(PROJECT_DIR))
-
 devel:
+	${MAKE} -j2 coffee gin
+
+gin:
 	$(GOPATH)/bin/gin run config/development.yaml
 
 run:
@@ -49,6 +58,12 @@ install:
 	go install $(INSTALL_FLAGS) -v $(PROJECT)/...
 
 else
+
+deps:
+	$(error Cannot $@; $(CURDIR) is not on GOPATH)
+
+create-deps:
+	$(error Cannot $@; $(CURDIR) is not on GOPATH)
 
 devel:
 	$(error Cannot $@; $(CURDIR) is not on GOPATH)
@@ -70,4 +85,4 @@ clean:
 
 endif
 
-.PHONY: all build check clean create-deps deps devel install run
+.PHONY: all build check clean coffee create-deps deps devel gin install run

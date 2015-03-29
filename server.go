@@ -125,7 +125,7 @@ func main() {
 		FrameDeny:             true,
 		ContentTypeNosniff:    true,
 		BrowserXssFilter:      true,
-		ContentSecurityPolicy: "default-src 'self'; style-src 'self' 'unsafe-inline'",
+		ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'sha256-7J6gaJJZABYjz3dp4NuzWDI/bKaqDCQd9Oozr3jfs+k='; style-src 'self' 'unsafe-inline'",
 	}))
 	m.Use(render.Renderer(render.Options{
 		Layout: "base",

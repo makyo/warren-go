@@ -43,6 +43,24 @@
 		</div>
 	</div>
 	<div class="form-group">
+		<label class="col-sm-2 control-label" for="pronouns">Pronouns</label>
+		<div class="col-sm-10">
+			<div class="input-group">
+				<input type="text" name="pronouns" id="pronouns" class="form-control" value="{{.Pronouns}}" />
+				<span class="input-group-btn pronoun-chooser">
+					<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Some defaults <span class="caret"></span></button>
+					<ul class="dropdown-menu dropdown-menu-right" role="menu">
+						<li><a>they/them/their</a></li>
+						<li><a>she/her/hers</a></li>
+						<li><a>he/him/his</a></li>
+						<li><a>ey/em/eir</a></li>
+						<li><a>xe/xem/xyr</a></li>
+					</ul>
+				</span>
+			</div>
+		</div>
+	</div>
+	<div class="form-group">
 		<label class="col-sm-2 control-label" for="website">Website</label>
 		<div class="col-sm-10">
 			<input type="text" name="website" id="website" class="form-control" value="{{.Website}}" />
@@ -54,3 +72,5 @@
 		</div>
 	</div>
 </form>
+
+<script src="/js/editProfile.js"></script>
