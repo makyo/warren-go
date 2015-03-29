@@ -7,3 +7,8 @@ footer {
 	margin: 100px 0;
 	border-top: 1px solid rgb(238, 238, 238);
 }
+
+/* User profile ------------------------------------------------------------ */
+.relationship-buttons {
+	display: inline;
+}

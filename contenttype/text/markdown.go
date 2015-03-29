@@ -18,13 +18,17 @@ func (c *Markdown) Safe() bool {
 }
 
 // Render the markdown, sanitize the output, and return that for display.
-func (c *Markdown) RenderDisplayContent(content string) (string, error) {
-	rendered := blackfriday.MarkdownCommon([]byte(content))
-	safe := bluemonday.UGCPolicy().SanitizeBytes(rendered)
-	return string(safe), nil
+func (c *Markdown) RenderDisplayContent(content interface{}) (string, error) {
+	return RenderMarkdown(content.(string)), nil
 }
 
 // Simply return the markdown for indexing.
-func (c *Markdown) RenderIndexContent(content string) (string, error) {
-	return content, nil
+func (c *Markdown) RenderIndexContent(content interface{}) (string, error) {
+	return content.(string), nil
+}
+
+func RenderMarkdown(in string) string {
+	rendered := blackfriday.MarkdownCommon([]byte(in))
+	safe := bluemonday.UGCPolicy().SanitizeBytes(rendered)
+	return string(safe)
 }

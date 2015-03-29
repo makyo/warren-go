@@ -21,6 +21,7 @@ type User struct {
 	Friends              []string
 	FriendRequests       []string
 	FriendshipsRequested []string
+	Status               string
 }
 
 // Retrieve a user from the database given a username

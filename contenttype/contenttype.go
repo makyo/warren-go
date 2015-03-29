@@ -6,7 +6,7 @@ package contenttype
 
 // A content type encodes the data in an entity for display on the site.
 type ContentType interface {
-	RenderDisplayContent(content string) (string, error)
-	RenderIndexContent(content string) (string, error)
+	RenderDisplayContent(content interface{}) (string, error)
+	RenderIndexContent(content interface{}) (string, error)
 	Safe() bool
 }

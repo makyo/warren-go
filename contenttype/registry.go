@@ -5,6 +5,7 @@
 package contenttype
 
 import (
+	"github.com/warren-community/warren/contenttype/test"
 	"github.com/warren-community/warren/contenttype/text"
 	"github.com/warren-community/warren/contenttype/user"
 )
@@ -20,4 +21,5 @@ var Registry = map[string]ContentType{
 	"text/plain":    new(text.Plain),
 	"text/markdown": new(text.Markdown),
 	"user/profile":  new(user.Profile),
+	"test/error":    new(test.Error),
 }

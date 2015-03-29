@@ -25,3 +25,7 @@ _testmain.go
 
 # Gin binary
 gin-bin
+
+# Node modules
+node_modules
+npm-debug.log

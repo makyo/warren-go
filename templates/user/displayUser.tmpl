@@ -1,114 +1,158 @@
 <div class="row">
 	<div class="col-sm-8">
-		{{.ProfileStr}}
+		<div class="panel panel-default">
+			<div class="panel-body">
+				{{.ProfileStr}}
+			</div>
+		</div>
 	</div>
 	<div class="col-sm-4">
-		<dl class="dl-horizontal">
-			<dt>Username</dt>
-			<dd>{{.DisplayUser.Username}}</dd>
-			<dt>Following</dt>
-			<dd>
-				{{range .DisplayUser.Following}}
-					<a href="/~{{urlquery .}}">{{.}}</a>
-				{{else}}
-					Not following any users.
-				{{end}}
-			</dd>
-			<dt>Followers</dt>
-			<dd>
-				{{range .DisplayUser.Followers}}
-					<a href="/~{{urlquery .}}">{{.}}</a>
-				{{else}}
-					No users following.
-				{{end}}
-			</dd>
-			<dt>Friends</dt>
-			<dd>
-				{{range .DisplayUser.Friends}}
-					<a href="/~{{urlquery .}}">{{.}}</a>
-				{{else}}
-					Not friends with any users.
-				{{end}}
-			</dd>
-		</dl>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Details</h3>
+			</div>
+			<div class="panel-body">
+				<dl class="dl-horizontal">
+					<dt>Username</dt>
+					<dd>{{.DisplayUser.Username}}</dd>
+					<dt>Following</dt>
+					<dd>
+						{{range .DisplayUser.Following}}
+							<a href="/~{{urlquery .}}">{{.}}</a>
+						{{else}}
+							Not following any users.
+						{{end}}
+					</dd>
+					<dt>Followers</dt>
+					<dd>
+						{{range .DisplayUser.Followers}}
+							<a href="/~{{urlquery .}}">{{.}}</a>
+						{{else}}
+							No users following.
+						{{end}}
+					</dd>
+					<dt>Friends</dt>
+					<dd>
+						{{range .DisplayUser.Friends}}
+							<a href="/~{{urlquery .}}">{{.}}</a>
+						{{else}}
+							Not friends with any users.
+						{{end}}
+					</dd>
+				</dl>
+			</div>
+		</div>
 	</div>
 </div>
 
 {{if and .User.IsAuthenticated (ne .User.Model.Username .DisplayUser.Username)}}
-	{{if .IsFollowing}}
-		<form action="/user/unfollow" method="post">
-			<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
-			<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
-			<button class="btn btn-primary">
-				<span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-				Unfollow
-			</button>
-		</form>
-	{{else}}
-		<form action="/user/follow" method="post">
-			<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
-			<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
-			<button class="btn btn-primary">
-				<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-				Follow
-			</button>
-		</form>
-	{{end}}
-
-	{{if .IsFriend}}
-		<form action="/user/friend/cancel" method="post">
-			<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
-			<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
-			<button class="btn btn-success">
-				<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
-				Unriend
-			</button>
-		</form>
-	{{else}}
-		{{if .HasRequestedFriendship}}
-			Friendship already requested!
-			<form action="/user/friend/confirm" method="post">
-				<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
-				<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
-				<button class="btn btn-success">
-					<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-					Accept
-				</button>
-			</form>
-			<form action="/user/friend/reject" method="post">
-				<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
-				<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
-				<button class="btn btn-danger">
-					<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-					Reject
-				</button>
-			</form>
-		{{else}}
-			{{if .FriendRequestPending}}
-				<button class="btn btn-disabled">
-					Friendship request pending
-				</button>
-			{{else}}
-				<form action="/user/friend/request" method="post">
-					<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
-					<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
-					<button class="btn btn-success">
-						<span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
-						Friend
-					</button>
-				</form>
-			{{end}}
+	<div class="row">
+		{{if eq .User.Model.Status "admin"}}
+			<div class="col-sm-8">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">Administration</h3>
+					</div>
+					<div class="panel-body">
+						TODO
+					</div>
+				</div>
+			</div>
 		{{end}}
-	{{end}}
+		<div class="col-sm-4{{if ne .User.Model.Status "admin"}} col-sm-offset-8{{end}}">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Relationships</h3>
+				</div>
+				<div class="panel-body">
+					{{if .IsFollowing}}
+						<form action="/user/unfollow" method="post" class="relationship-buttons">
+							<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+							<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
+							<button class="btn btn-primary">
+								<span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+								Unfollow
+							</button>
+						</form>
+					{{else}}
+						<form action="/user/follow" method="post" class="relationship-buttons">
+							<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+							<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
+							<button class="btn btn-primary">
+								<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+								Follow
+							</button>
+						</form>
+					{{end}}
+
+					{{if .IsFriend}}
+						<form action="/user/friend/cancel" method="post" class="relationship-buttons">
+							<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+							<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
+							<button class="btn btn-success">
+								<span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+								Unriend
+							</button>
+						</form>
+					{{else}}
+						{{if .HasRequestedFriendship}}
+							Friendship already requested!
+							<form action="/user/friend/confirm" method="post" class="relationship-buttons">
+								<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+								<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
+								<button class="btn btn-success">
+									<span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+									Accept
+								</button>
+							</form>
+							<form action="/user/friend/reject" method="post" class="relationship-buttons">
+								<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+								<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
+								<button class="btn btn-danger">
+									<span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+									Reject
+								</button>
+							</form>
+						{{else}}
+							{{if .FriendRequestPending}}
+								<button class="btn btn-disabled" disabled>
+									Friendship request pending
+								</button>
+							{{else}}
+								<form action="/user/friend/request" method="post" class="relationship-buttons">
+									<input type="hidden" value="{{.CSRF}}" name="_csrf_token" />
+									<input type="hidden" value="{{.DisplayUser.Username}}" name="username" />
+									<button class="btn btn-success">
+										<span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+										Friend
+									</button>
+								</form>
+							{{end}}
+						{{end}}
+					{{end}}
+				</div> <!-- /panel-body -->
+			</div> <!-- /panel -->
+		</div> <!-- /col -->
+	</div> <!-- /row -->
 {{end}}
 
-<h2>Posts</h2>
-{{if ne (len .Entities) 0}}
-	<ul>
-		{{range .Entities}}
-			<li><a href="/{{.Id.Hex}}">{{.Title}}</a> - {{.ContentType}}</li>
-		{{end}}
-	</ul>
-{{else}}
-	No posts to display.
-{{end}}
+<div class="row">
+	<div class="col-sm-12">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h2 class="panel-title">Posts</h2>
+			</div>
+			<div class="panel-body">
+				{{if ne (len .Entities) 0}}
+					<ul>
+						{{range .Entities}}
+							<li><a href="/{{.Id.Hex}}">{{.Title}}</a> - {{.ContentType}}</li>
+						{{end}}
+					</ul>
+				{{else}}
+					No posts to display.
+				{{end}}
+			</div>
+		</div>
+	</div>
+</div>
