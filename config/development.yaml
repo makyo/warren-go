@@ -2,11 +2,12 @@
 # "production"
 env-type: "development"
 
-# auth-key should be 16 or 32 characters
-auth-key: "dev-auth-key----"
+session-keys:
+    # auth-key should be 16 or 32 characters
+    auth-key: "dev-auth-key----"
 
-# encryption-key should be 16, 32, or 64 characters
-encryption-key: "dev-encryption-key--------------"
+    # encryption-key should be 16, 32, or 64 characters
+    encryption-key: "dev-encryption-key--------------"
 
 # Mongo connection details
 mongo:
@@ -17,3 +18,6 @@ mongo:
 elasticsearch:
     host: "localhost"
     port: 9300
+
+smtp:
+    host: "localhost"
