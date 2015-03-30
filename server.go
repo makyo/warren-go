@@ -21,25 +21,24 @@ import (
 	"github.com/warren-community/warren/handlers"
 )
 
-// Store Mongo connection information
-type Mongo struct {
-	Host string `yaml:"host"`
-	DB   string `yaml:"db"`
-}
-
-// Store ElasticSearch connection information
-type ElasticSearch struct {
-	Host string `yaml:"host"`
-	Port string `yaml:"port"`
-}
-
 // Store the configuration information for the application.
 type Config struct {
-	EnvironmentType string        `yaml:"env-type"`
-	AuthKey         string        `yaml:"auth-key"`
-	EncryptionKey   string        `yaml:"encryption-key"`
-	Mongo           Mongo         `yaml:"mongo"`
-	ElasticSearch   ElasticSearch `yaml:"elasticsearch"`
+	EnvironmentType string `yaml:"env-type"`
+	SessionKeys     struct {
+		AuthKey       string `yaml:"auth-key"`
+		EncryptionKey string `yaml:"encryption-key"`
+	} `yaml:"session-keys"`
+	Mongo struct {
+		Host string `yaml:"host"`
+		DB   string `yaml:"db"`
+	} `yaml:"mongo"`
+	ElasticSearch struct {
+		Host string `yaml:"host"`
+		Port string `yaml:"port"`
+	} `yaml:"elasticsearch"`
+	SMTP struct {
+		Host string `yaml:"host"`
+	} `yaml:"smtp"`
 }
 
 var (
@@ -64,7 +63,7 @@ func init() {
 
 	martini.Env = config.EnvironmentType
 
-	store = sessions.NewCookieStore([]byte(config.AuthKey), []byte(config.EncryptionKey))
+	store = sessions.NewCookieStore([]byte(config.SessionKeys.AuthKey), []byte(config.SessionKeys.EncryptionKey))
 
 	dbSession, err := mgo.Dial(config.Mongo.Host)
 	if err != nil {
