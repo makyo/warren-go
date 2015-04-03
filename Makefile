@@ -21,15 +21,15 @@ $(NODE_TARGETS): package.json
 coffee: $(NODE_TARGETS)
 	node_modules/coffee-script/bin/coffee -o public/js -cw public/coffee
 
-ifeq ($(CURDIR),$(PROJECT_DIR))
-
 godeps:
 	go get -v github.com/codegangsta/gin/...
 	go get -v github.com/smartystreets/goconvey/...
 	go get -v launchpad.net/godeps
-	go get -v ./...
+
+ifeq ($(CURDIR),$(PROJECT_DIR))
 
 deps: godeps
+	go get -v ./...
 	godeps -u dependencies.tsv
 
 create-deps:
