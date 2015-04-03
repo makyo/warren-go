@@ -17,7 +17,7 @@ mongo:
 # ElasticSearch connection details
 elasticsearch:
     host: "localhost"
-    port: 9300
+    port: 9200
 
 smtp:
     host: "localhost"

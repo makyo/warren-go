@@ -45,6 +45,8 @@ var (
 	store  sessions.Store
 	db     *mgo.Database
 	esConn *elastigo.Conn
+
+	dbSession *mgo.Session
 )
 
 // Initialize the app, connecting to outside services if necessary.
@@ -65,14 +67,14 @@ func init() {
 
 	store = sessions.NewCookieStore([]byte(config.SessionKeys.AuthKey), []byte(config.SessionKeys.EncryptionKey))
 
-	dbSession, err := mgo.Dial(config.Mongo.Host)
+	dbSession, err = mgo.Dial(config.Mongo.Host)
 	if err != nil {
 		panic(err)
 	}
 
 	db = dbSession.DB(config.Mongo.DB)
 
-	esConn := elastigo.NewConn()
+	esConn = elastigo.NewConn()
 	esConn.Domain = config.ElasticSearch.Host
 	esConn.Port = config.ElasticSearch.Port
 }
@@ -114,6 +116,8 @@ func main() {
 	m.Get("/posts/following", h.ListFollowing)
 	m.Get("/posts/friends", h.ListFriends)
 
+	m.Post("/search", h.SearchResults)
+
 	m.Use(secure.Secure(secure.Options{
 		//AllowedHosts:          []string{"example.com", "ssl.example.com"},
 		//SSLHost:               "ssl.example.com",
@@ -139,6 +143,9 @@ func main() {
 	m.Use(h.SessionMiddleware)
 	m.Use(h.AuthenticationMiddleware)
 	m.Use(h.CSRFMiddleware)
+
+	defer dbSession.Close()
+	defer esConn.Close()
 
 	m.Run()
 }

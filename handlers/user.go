@@ -249,7 +249,7 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Lo
 			Website:     website,
 		},
 	)
-	profile.Save(h.db)
+	profile.Save(h.db, h.esConn)
 	h.session.AddFlash(NewFlash("Profile updated!", "success"))
 	h.session.Save(r, w)
 	http.Redirect(w, r, fmt.Sprintf("/~%s", h.user.Model.Username), http.StatusSeeOther)

@@ -7,6 +7,8 @@ package models
 import (
 	"fmt"
 
+	elastigo "github.com/mattbaird/elastigo/lib"
+	"gopkg.in/errgo.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -55,17 +57,21 @@ func NewEntity(contentType string, owner string, originalOwner string, isShare b
 
 // Save the current entity in the database, generating display and index
 // content in the process
-func (e *Entity) Save(db *mgo.Database) error {
+func (e *Entity) Save(db *mgo.Database, es *elastigo.Conn) error {
 	err := e.updateRenderedContent(false)
 	if err != nil {
-		return err
+		return errgo.Mask(err)
 	}
 	err = e.updateIndexedContent(false)
 	if err != nil {
-		return err
+		return errgo.Mask(err)
+	}
+	_, err = es.Index("warren", "entity", e.Id.Hex(), nil, map[string]string{"indexedContent": e.IndexedContent})
+	if err != nil {
+		return errgo.Mask(err)
 	}
 	_, err = db.C("entities").UpsertId(e.Id, e)
-	return err
+	return errgo.Mask(err)
 }
 
 // Render the content using the content type renderer for display.
