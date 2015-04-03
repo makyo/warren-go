@@ -1,0 +1,7 @@
+<form method="post" action="/search">
+	<input type="hidden" name="_csrf_token" value="{{.CSRF}}" />
+	<div class="form-group">
+		<input type="text" name="q" class="form-control" placeholder="Search" />
+	</div>
+	<button type="submit" class="btn btn-primary">Submit</button>
+</form>

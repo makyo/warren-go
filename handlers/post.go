@@ -113,9 +113,9 @@ func (h *Handlers) CreatePost(w http.ResponseWriter, r *http.Request, l *log.Log
 		r.FormValue("title"),
 		r.FormValue("content"),
 	)
-	err := entity.Save(h.db)
+	err := entity.Save(h.db, h.esConn)
 	if err != nil {
-		l.Print(err.Error)
+		l.Print(err.Error())
 		http.Error(w, "Could not save post", http.StatusInternalServerError)
 		return
 	}

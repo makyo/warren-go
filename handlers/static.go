@@ -13,6 +13,7 @@ import (
 // Serve the front-page of the site.
 func (h *Handlers) Front(w http.ResponseWriter, r *http.Request, render render.Render) {
 	render.HTML(200, "static/front", map[string]interface{}{
+		"CSRF":    h.session.Values["_csrf_token"],
 		"Title":   "Welcome",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
