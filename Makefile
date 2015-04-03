@@ -21,9 +21,6 @@ help:
 $(NODE_TARGETS): package.json
 	npm install
 
-$(GOPATH)/bin/godeps:
-	go get -v launchpad.net/godeps
-
 coffee: $(NODE_TARGETS)
 	node_modules/coffee-script/bin/coffee -o public/js -cw public/coffee
 
