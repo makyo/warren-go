@@ -19,7 +19,7 @@ import (
 func (h *Handlers) DisplayTag(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger, params martini.Params) {
 	searchJson := fmt.Sprintf(`{
 		"query": {
-			"match": {
+			"term": {
 				"Tags": "%s"
 			}
 		}

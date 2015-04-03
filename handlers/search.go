@@ -24,9 +24,11 @@ func (h *Handlers) Search(w http.ResponseWriter, r *http.Request, render render.
 	}
 	searchJson := fmt.Sprintf(`{
 		"query": {
-			"multi_match": {
+			"simple_query_string": {
 				"query": "%s",
-				"fields": ["IndexedContent", "Title", "Tags"]
+				"analyzer": "snowball",
+				"fields": ["IndexedContent", "Title", "Tags"],
+				"default_operator": "and"
 			}
 		}
 	}`, template.JSEscapeString(q))
