@@ -14,9 +14,15 @@ import (
 )
 
 func TestEntityModel(t *testing.T) {
+	Convey("Converting tags", t, func() {
+		So(TagStringToTags("foo"), ShouldResemble, []string{"foo"})
+		So(TagStringToTags("foo,bar"), ShouldResemble, []string{"foo", "bar"})
+		So(TagStringToTags("foo,  bar   "), ShouldResemble, []string{"foo", "bar"})
+	})
+
 	Convey("Given an entity", t, func() {
 		contenttype.Registry["text/raw"] = new(text.Raw)
-		e := NewEntity("text/raw", "owner", "originalOwner", true, "title", "content")
+		e := NewEntity("text/raw", "owner", "originalOwner", true, "title", []string{"foo", "bar"}, "content")
 
 		Convey("The fields are created properly", func() {
 			So(e.Id.Valid(), ShouldBeTrue)

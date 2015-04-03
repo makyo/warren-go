@@ -1,19 +1,29 @@
-<dl>
-	<dt>Query:</dt>
-	<dd>{{.Q}}</dd>
-	<dt>Search completed in:</dt>
-	<dd>{{.Res.Took}}ms</dd>
-	<dt>Number of results:</dt>
-	<dd>{{.Res.Hits.Total}}</dd>
-</dl>
 <form method="get" action="/search">
 	<div class="form-group">
-		<input type="text" name="q" class="form-control" value="{{.Q}}" />
+		<div class="input-group">
+			<input type="text" name="q" class="form-control" value="{{.Q}}" />
+			<span class="input-group-btn">
+				<button type="submit" class="btn btn-primary">Go!</button>
+			</span>
+		</div>
 	</div>
-	<button type="submit" class="btn btn-primary">Submit</button>
 </form>
+<ul class="list-inline">
+	<li>
+		<strong>Query:</strong>
+		<em>{{.Q}}</em>
+	</li>
+	<li>
+		<strong>Number of results:</strong>
+		<em>{{.Res.Hits.Total}}</em>
+	</li>
+	<li>
+		<strong>Search completed in:</strong>
+		<em>{{.Res.Took}}ms</em>
+	</li>
+</ul>
 <ul>
-{{range .Res.Hits.Hits}}
-<li>{{.Id}}</li>
+{{range .Hits}}
+<li><a href="/{{.Id.Hex}}">{{.Title}}</a> - <em>by <a href="/~{{.Owner}}">{{.Owner}}</a></em></li>
 {{end}}
 </ul>

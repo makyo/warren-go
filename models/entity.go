@@ -6,6 +6,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 
 	elastigo "github.com/mattbaird/elastigo/lib"
 	"gopkg.in/errgo.v1"
@@ -25,10 +26,17 @@ type Entity struct {
 	OriginalOwner   string
 	IsShare         bool
 	Title           string
+	Tags            []string
 	Content         interface{}
 	RenderedContent string
 	IndexedContent  string
 	Assets          []bson.ObjectId
+}
+
+type esIndex struct {
+	IndexedContent string
+	Title          string
+	Tags           []string
 }
 
 // Retrive an entity given an ID
@@ -43,7 +51,7 @@ func GetEntity(id string, db *mgo.Database) (Entity, error) {
 }
 
 // Create a new entity with a new ID.
-func NewEntity(contentType string, owner string, originalOwner string, isShare bool, title string, content interface{}) Entity {
+func NewEntity(contentType string, owner string, originalOwner string, isShare bool, title string, tags []string, content interface{}) Entity {
 	return Entity{
 		Id:            bson.NewObjectId(),
 		ContentType:   contentType,
@@ -51,8 +59,18 @@ func NewEntity(contentType string, owner string, originalOwner string, isShare b
 		OriginalOwner: originalOwner,
 		IsShare:       isShare,
 		Title:         title,
+		Tags:          tags,
 		Content:       content,
 	}
+}
+
+// Convert a string containing comma-separated tags to an array of tags.
+func TagStringToTags(tagString string) []string {
+	tags := strings.Split(tagString, ",")
+	for i, tag := range tags {
+		tags[i] = strings.TrimSpace(tag)
+	}
+	return tags
 }
 
 // Save the current entity in the database, generating display and index
@@ -66,7 +84,11 @@ func (e *Entity) Save(db *mgo.Database, es *elastigo.Conn) error {
 	if err != nil {
 		return errgo.Mask(err)
 	}
-	_, err = es.Index("warren", "entity", e.Id.Hex(), nil, map[string]string{"indexedContent": e.IndexedContent})
+	_, err = es.Index("warren", "entity", e.Id.Hex(), nil, esIndex{
+		IndexedContent: e.IndexedContent,
+		Title:          e.Title,
+		Tags:           e.Tags,
+	})
 	if err != nil {
 		return errgo.Mask(err)
 	}

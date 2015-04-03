@@ -1,4 +1,10 @@
-<div class="well well-sm">by <a href="/~{{urlquery .Entity.Owner}}">{{.Entity.Owner}}</a></div>
+<div class="well well-sm">
+	by <a href="/~{{urlquery .Entity.Owner}}">{{.Entity.Owner}}</a><br />
+	Tagged: 
+	{{range .Entity.Tags}}
+		<a href="/tag/{{urlquery .}}">{{.}}</a>
+	{{end}}
+</div>
 
 {{.Content}}
 
