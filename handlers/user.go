@@ -19,7 +19,7 @@ import (
 )
 
 // Display a login form (or redirect if the user is already logged in).
-func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log.Logger, render render.Render) {
+func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, render render.Render) {
 	if h.user.IsAuthenticated {
 		h.session.AddFlash(NewFlash("Already logged in!"))
 		h.session.Save(r, w)
@@ -35,7 +35,7 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 }
 
 // Log the user in.
-func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, render render.Render, log *log.Logger) {
+func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	if h.user.IsAuthenticated {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -43,7 +43,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, render render.R
 	username, password := r.FormValue("username"), r.FormValue("password")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		log.Printf("Could not get user: %+v\n", err)
+		l.Printf("Could not get user: %+v\n", err)
 		h.InternalServerError(w, r, render)
 		return
 	}
@@ -84,7 +84,7 @@ func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, rende
 }
 
 // Register a new user.
-func (h *Handlers) Register(w http.ResponseWriter, r *http.Request, render render.Render) {
+func (h *Handlers) Register(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	if h.user.IsAuthenticated {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -105,7 +105,7 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request, render rende
 	c := h.db.C("users")
 	existing, err := c.Find(bson.M{"username": username}).Count()
 	if err != nil {
-		log.Printf("Could not execute find: %+v\n", err)
+		l.Printf("Could not execute find: %+v\n", err)
 		h.InternalServerError(w, r, render)
 		return
 	}
@@ -117,7 +117,7 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request, render rende
 	}
 	user, err := models.NewUser(username, email, password)
 	if err != nil {
-		log.Printf("Could not generate user: %+v\n", err)
+		l.Printf("Could not generate user: %+v\n", err)
 		h.InternalServerError(w, r, render)
 		return
 	}
@@ -255,7 +255,7 @@ func (h *Handlers) EditSettings(w http.ResponseWriter, r *http.Request, render r
 	}
 	username, password, newpassword, newpasswordconfirm, email := r.FormValue("username"), r.FormValue("password"), r.FormValue("newpassword"), r.FormValue("newpasswordconfirm"), r.FormValue("email")
 	if username != h.user.Model.Username {
-		l.Print("User attempted to save to another profile")
+		l.Print("SECURITY: User %s attempted to save to another profile: %s", username, h.user.Model.Username)
 		h.Forbidden(w, r, render)
 		return
 	}
