@@ -58,8 +58,7 @@
 							<li><a href="/register">Register</a></li>
 						{{end}}
 					</ul>
-      				<form class="navbar-form navbar-right" method="post" action="/search">
-      					<input type="hidden" name="_csrf_token" value="{{.CSRF}}">
+      				<form class="navbar-form navbar-right" method="get" action="/search">
       					<div class="form-group">
       						<input type="text" class="form-control" placeholder="Search" name="q">
       					</div>

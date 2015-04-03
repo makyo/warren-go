@@ -26,7 +26,7 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	render.HTML(200, "user/displayLogin", map[string]interface{}{
+	render.HTML(http.StatusOK, "user/displayLogin", map[string]interface{}{
 		"Title":   "Log in",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
@@ -35,21 +35,16 @@ func (h *Handlers) DisplayLogin(w http.ResponseWriter, r *http.Request, log *log
 }
 
 // Log the user in.
-func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, log *log.Logger) {
+func (h *Handlers) Login(w http.ResponseWriter, r *http.Request, render render.Render, log *log.Logger) {
 	if h.user.IsAuthenticated {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-	if err := r.ParseForm(); err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Could not parse form", http.StatusInternalServerError)
 		return
 	}
 	username, password := r.FormValue("username"), r.FormValue("password")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Could not search for user", http.StatusInternalServerError)
+		log.Printf("Could not get user: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if !user.Authenticate(password) {
@@ -80,7 +75,7 @@ func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, rende
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	render.HTML(200, "user/displayRegister", map[string]interface{}{
+	render.HTML(http.StatusOK, "user/displayRegister", map[string]interface{}{
 		"Title":   "Sign up",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
@@ -89,14 +84,9 @@ func (h *Handlers) DisplayRegister(w http.ResponseWriter, r *http.Request, rende
 }
 
 // Register a new user.
-func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Register(w http.ResponseWriter, r *http.Request, render render.Render) {
 	if h.user.IsAuthenticated {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-	if err := r.ParseForm(); err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Could not parse form", http.StatusInternalServerError)
 		return
 	}
 	username, email, password, passwordConfirm := r.FormValue("username"), r.FormValue("email"), r.FormValue("password"), r.FormValue("passwordconfirm")
@@ -115,8 +105,8 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
 	c := h.db.C("users")
 	existing, err := c.Find(bson.M{"username": username}).Count()
 	if err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Could not execute find", http.StatusInternalServerError)
+		log.Printf("Could not execute find: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if existing > 0 {
@@ -127,8 +117,8 @@ func (h *Handlers) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := models.NewUser(username, email, password)
 	if err != nil {
-		log.Print(err.Error())
-		http.Error(w, "Could not generate user", http.StatusInternalServerError)
+		log.Printf("Could not generate user: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	user.Save(h.db)
@@ -150,19 +140,19 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 		var err error
 		user, err = models.GetUser(username, h.db)
 		if err != nil {
-			l.Print(err.Error())
-			http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+			l.Printf("Could not fetch user from database: %+v\n", err)
+			h.InternalServerError(w, r, render)
 			return
 		}
 		if user.Username == "" {
-			http.Error(w, "Could not find user", http.StatusNotFound)
+			h.NotFound(w, r, render)
 			return
 		}
 	}
 	entities, err := user.Entities(h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch entities from database", http.StatusInternalServerError)
+		l.Printf("Could not fetch entities from database: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	profile, err := user.Profile(h.db)
@@ -172,12 +162,12 @@ func (h *Handlers) DisplayUser(w http.ResponseWriter, r *http.Request, l *log.Lo
 				RenderedContent: fmt.Sprintf("%s hasn't created a profile yet.", username),
 			}
 		} else {
-			l.Print(err.Error())
-			http.Error(w, "Could not fetch profile from database", http.StatusInternalServerError)
+			l.Printf("Could not fetch profile from database: %+v\n", err)
+			h.InternalServerError(w, r, render)
 			return
 		}
 	}
-	render.HTML(200, "user/displayUser", map[string]interface{}{
+	render.HTML(http.StatusOK, "user/displayUser", map[string]interface{}{
 		"Title":                  fmt.Sprintf("User %s", user.Username),
 		"User":                   h.user,
 		"Flashes":                h.flashes(r, w),
@@ -202,15 +192,15 @@ func (h *Handlers) DisplayEditProfile(w http.ResponseWriter, r *http.Request, l 
 	}
 	profile, err := h.user.Model.Profile(h.db)
 	if err != nil && err.Error() != "not found" {
-		l.Print(err.Error())
-		http.Error(w, "Could not load profile", http.StatusInternalServerError)
+		l.Printf("Could not load profile: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	content := user.Profile{}
 	if profile.Content != nil {
 		content = user.NewProfile(profile.Content.(bson.M))
 	}
-	render.HTML(200, "user/displayEditProfile", map[string]interface{}{
+	render.HTML(http.StatusOK, "user/displayEditProfile", map[string]interface{}{
 		"Title":      "Edit profile and settings",
 		"User":       h.user,
 		"Flashes":    h.flashes(r, w),
@@ -222,7 +212,7 @@ func (h *Handlers) DisplayEditProfile(w http.ResponseWriter, r *http.Request, l 
 }
 
 // Edit the profile information for a user.
-func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	if !h.user.IsAuthenticated {
 		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
 		h.session.Save(r, w)
@@ -232,8 +222,8 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Lo
 	profileStr, website, pronouns := r.FormValue("profile"), r.FormValue("website"), r.FormValue("pronouns")
 	profile, err := h.user.Model.Profile(h.db)
 	if err != nil && err.Error() != "not found" {
-		l.Print(err.Error())
-		http.Error(w, "Error retrieving existing profile", http.StatusInternalServerError)
+		l.Printf("Error retrieving existing profile: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	profile.Delete(h.db)
@@ -256,7 +246,7 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, l *log.Lo
 }
 
 // Edit the raw settings of a user (password, email).
-func (h *Handlers) EditSettings(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) EditSettings(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	if !h.user.IsAuthenticated {
 		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
 		h.session.Save(r, w)
@@ -266,7 +256,7 @@ func (h *Handlers) EditSettings(w http.ResponseWriter, r *http.Request, l *log.L
 	username, password, newpassword, newpasswordconfirm, email := r.FormValue("username"), r.FormValue("password"), r.FormValue("newpassword"), r.FormValue("newpasswordconfirm"), r.FormValue("email")
 	if username != h.user.Model.Username {
 		l.Print("User attempted to save to another profile")
-		http.Error(w, "Could not modify that user", http.StatusForbidden)
+		h.Forbidden(w, r, render)
 		return
 	}
 	if !h.user.Model.Authenticate(password) {
@@ -292,16 +282,16 @@ func (h *Handlers) EditSettings(w http.ResponseWriter, r *http.Request, l *log.L
 }
 
 // Attempt to follow a user from the logged-in account.
-func (h *Handlers) FollowUser(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) FollowUser(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	username := r.FormValue("username")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		l.Printf("Could not fetch user from database: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if user.Username == "" {
-		http.Error(w, "Could not find user", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
 	h.user.Model.AddFollowing(&user)
@@ -313,16 +303,16 @@ func (h *Handlers) FollowUser(w http.ResponseWriter, r *http.Request, l *log.Log
 }
 
 // Attempt to unfollow a user from from the logged-in account.
-func (h *Handlers) UnfollowUser(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) UnfollowUser(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	username := r.FormValue("username")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		l.Printf("Could not fetch user from database: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if user.Username == "" {
-		http.Error(w, "Could not find user", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
 	h.user.Model.RemoveFollowing(&user)
@@ -334,16 +324,16 @@ func (h *Handlers) UnfollowUser(w http.ResponseWriter, r *http.Request, l *log.L
 }
 
 // Attempt to request a friendship with a user from the logged-in account.
-func (h *Handlers) RequestFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) RequestFriendship(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	username := r.FormValue("username")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		l.Printf("Could not fetch user from database: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if user.Username == "" {
-		http.Error(w, "Could not find user", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
 	h.user.Model.RequestFriendship(&user)
@@ -362,7 +352,7 @@ func (h *Handlers) DisplayFriendshipRequests(w http.ResponseWriter, r *http.Requ
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	render.HTML(200, "user/displayFriendshipRequests", map[string]interface{}{
+	render.HTML(http.StatusOK, "user/displayFriendshipRequests", map[string]interface{}{
 		"Title":   "Friendship Requests",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
@@ -371,16 +361,16 @@ func (h *Handlers) DisplayFriendshipRequests(w http.ResponseWriter, r *http.Requ
 }
 
 // Confirm a friendship request.
-func (h *Handlers) ConfirmFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) ConfirmFriendship(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	username := r.FormValue("username")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		l.Printf("Could not fetch user from database: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if user.Username == "" {
-		http.Error(w, "Could not find user", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
 	h.user.Model.AddFriendship(&user)
@@ -392,16 +382,16 @@ func (h *Handlers) ConfirmFriendship(w http.ResponseWriter, r *http.Request, l *
 }
 
 // Reject a friendship request.
-func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	username := r.FormValue("username")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		l.Printf("Could not fetch user from database: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if user.Username == "" {
-		http.Error(w, "Could not find user", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
 	user.RemoveFriendshipRequest(&h.user.Model)
@@ -413,16 +403,16 @@ func (h *Handlers) RejectFriendship(w http.ResponseWriter, r *http.Request, l *l
 }
 
 // Remove a friendship between two accounts.
-func (h *Handlers) CancelFriendship(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) CancelFriendship(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	username := r.FormValue("username")
 	user, err := models.GetUser(username, h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch user from database", http.StatusInternalServerError)
+		l.Printf("Could not fetch user from database: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if user.Username == "" {
-		http.Error(w, "Could not find user", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
 	h.user.Model.RemoveFriendship(&user)
