@@ -117,8 +117,9 @@ func main() {
 	m.Get("/posts/following", h.ListFollowing)
 	m.Get("/posts/friends", h.ListFriends)
 
-	m.Get("/search", h.DisplaySearch)
-	m.Post("/search", h.SearchResults)
+	m.Get("/search", h.Search)
+
+	m.NotFound(h.NotFound)
 
 	m.Use(secure.Secure(secure.Options{
 		//AllowedHosts:          []string{"example.com", "ssl.example.com"},

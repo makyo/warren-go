@@ -20,15 +20,15 @@ import (
 func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request, l *log.Logger, params martini.Params, render render.Render) {
 	entity, err := models.GetEntity(params["entityId"], h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch entity", http.StatusInternalServerError)
+		l.Printf("Could not fetch entity: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if entity.Id.Hex() == "" {
-		http.Error(w, "Post not found", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
-	render.HTML(200, "post/displayPost", map[string]interface{}{
+	render.HTML(http.StatusOK, "post/displayPost", map[string]interface{}{
 		"Title":   entity.Title,
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
@@ -40,7 +40,7 @@ func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request, l *log.Lo
 }
 
 // Remove a post from the database.
-func (h *Handlers) DeletePost(w http.ResponseWriter, r *http.Request, l *log.Logger) {
+func (h *Handlers) DeletePost(w http.ResponseWriter, r *http.Request, render render.Render, l *log.Logger) {
 	if !h.user.IsAuthenticated {
 		h.session.AddFlash(NewFlash("Please log in to continue", "warning"))
 		h.session.Save(r, w)
@@ -49,22 +49,22 @@ func (h *Handlers) DeletePost(w http.ResponseWriter, r *http.Request, l *log.Log
 	}
 	entity, err := models.GetEntity(r.FormValue("entityId"), h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not fetch entity", http.StatusInternalServerError)
+		l.Printf("Could not fetch entity: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	if entity.Id.Hex() == "" {
-		http.Error(w, "Post not found", http.StatusNotFound)
+		h.NotFound(w, r, render)
 		return
 	}
 	if !entity.BelongsToUser(h.user.Model) {
-		http.Error(w, "Permission denied, you may only delete your own posts", http.StatusForbidden)
+		h.Forbidden(w, r, render)
 		return
 	}
 	err = entity.Delete(h.db)
 	if err != nil {
-		l.Print(err.Error())
-		http.Error(w, "Could not delete entity", http.StatusInternalServerError)
+		l.Printf("Could not delete entity: %+v\n", err)
+		h.InternalServerError(w, r, render)
 		return
 	}
 	h.session.AddFlash(NewFlash("Post deleted!", "success"))
@@ -89,7 +89,7 @@ func (h *Handlers) DisplayCreatePost(w http.ResponseWriter, r *http.Request, ren
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	render.HTML(200, "post/displayCreatePost", map[string]interface{}{
+	render.HTML(http.StatusOK, "post/displayCreatePost", map[string]interface{}{
 		"Title":   "Create post",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
