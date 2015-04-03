@@ -2,8 +2,7 @@ PROJECT := github.com/warren-community/warren
 PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
 GODEPS := github.com/codegangsta/gin/...\
 	github.com/smartystreets/goconvey/...\
-	launchpad.net/godeps/...
-
+	launchpad.net/godeps
 
 NODE_TARGETS=node_modules/coffee_script
 
