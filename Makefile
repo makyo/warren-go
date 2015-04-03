@@ -1,8 +1,5 @@
 PROJECT := github.com/warren-community/warren
 PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
-GODEPS := github.com/codegangsta/gin/...\
-	github.com/smartystreets/goconvey/...\
-	launchpad.net/godeps
 
 NODE_TARGETS=node_modules/coffee_script
 
@@ -27,7 +24,9 @@ coffee: $(NODE_TARGETS)
 ifeq ($(CURDIR),$(PROJECT_DIR))
 
 godeps:
-	go get -v $(GODEPS)
+	go get -v github.com/codegangsta/gin/...
+	go get -v github.com/smartystreets/goconvey/...
+	go get -v launchpad.net/godeps
 	go get -v ./...
 
 deps: godeps
