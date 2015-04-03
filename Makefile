@@ -27,6 +27,7 @@ ifeq ($(CURDIR),$(PROJECT_DIR))
 
 deps:
 	go get -v $(GODEPS)
+	go get -v ./...
 	godeps -u dependencies.tsv
 
 create-deps:
