@@ -12,9 +12,17 @@ import (
 
 // Serve the front-page of the site.
 func (h *Handlers) Front(w http.ResponseWriter, r *http.Request, render render.Render) {
-	render.HTML(200, "front/front", map[string]interface{}{
+	render.HTML(200, "static/front", map[string]interface{}{
 		"CSRF":    h.session.Values["_csrf_token"],
 		"Title":   "Welcome",
+		"User":    h.user,
+		"Flashes": h.flashes(r, w),
+	})
+}
+
+func (h *Handlers) About(w http.ResponseWriter, r *http.Request, render render.Render) {
+	render.HTML(200, "static/about", map[string]interface{}{
+		"Title":   "About",
 		"User":    h.user,
 		"Flashes": h.flashes(r, w),
 	})

@@ -86,6 +86,7 @@ func main() {
 	h := handlers.New(store, db, esConn)
 
 	m.Get("/", h.Front)
+	m.Get("/about", h.About)
 
 	m.Get("/login", h.DisplayLogin)
 	m.Post("/login", h.Login)
