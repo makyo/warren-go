@@ -8,7 +8,8 @@ NODE_TARGETS=node_modules/coffee_script
 
 help:
 	@echo "Available targets:"
-	@echo "  deps - fetch all dependencies required"
+	@echo "  godeps - fetch all dependencies required"
+	@echo "  deps - set dependencies at required versions"
 	@echo "  devel - run the development server using gin"
 	@echo "  run - run the development server without using gin"
 	@echo "  create-deps - rebuild the dependencies.tsv file"
@@ -25,9 +26,11 @@ coffee: $(NODE_TARGETS)
 
 ifeq ($(CURDIR),$(PROJECT_DIR))
 
-deps:
+godeps:
 	go get -v $(GODEPS)
 	go get -v ./...
+
+deps: godeps
 	godeps -u dependencies.tsv
 
 create-deps:
@@ -82,4 +85,4 @@ clean:
 
 endif
 
-.PHONY: all build check clean coffee create-deps deps devel gin install run
+.PHONY: all build check clean coffee create-deps deps devel gin godeps install run
