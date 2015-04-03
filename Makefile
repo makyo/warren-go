@@ -1,9 +1,9 @@
-ifndef GOPATH
-	$(warning You need to set up a GOPATH)
-endif
-
 PROJECT := github.com/warren-community/warren
 PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
+GODEPS := github.com/codegangsta/gin/...\
+	github.com/smartystreets/goconvey/...\
+	launchpad.net/godeps/...
+
 
 NODE_TARGETS=node_modules/coffee_script
 
@@ -29,11 +29,11 @@ coffee: $(NODE_TARGETS)
 
 ifeq ($(CURDIR),$(PROJECT_DIR))
 
-deps: $(GOPATH)/bin/godeps
-	go get -v github.com/codegangsta/gin/... github.com/smartystreets/goconvey/...
-	$(GOPATH)/bin/godeps -u dependencies.tsv
+deps:
+	go get -v $(GODEPS)
+	godeps -u dependencies.tsv
 
-create-deps: $(GOPATH)/bin/godeps
+create-deps:
 	godeps -t $(shell go list $(PROJECT)/...) > dependencies.tsv || true
 
 devel:
