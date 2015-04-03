@@ -13,7 +13,7 @@
 	<button type="submit" class="btn btn-primary">Submit</button>
 </form>
 <ul>
-{{range .Res.Hits.Hits}}
-<li>{{.Id}}</li>
+{{range .Hits}}
+<li><a href="/{{.Id.Hex}}">{{.Title}}</a> - <em>by <a href="/~{{.Owner}}">{{.Owner}}</a></em></li>
 {{end}}
 </ul>

@@ -36,6 +36,7 @@ func (h *Handlers) DisplayPost(w http.ResponseWriter, r *http.Request, l *log.Lo
 		"Entity":  entity,
 		"IsOwner": entity.BelongsToUser(h.user.Model),
 		"Content": template.HTML(entity.RenderedContent),
+		"Tags":    entity.Tags,
 	})
 }
 
@@ -111,6 +112,7 @@ func (h *Handlers) CreatePost(w http.ResponseWriter, r *http.Request, l *log.Log
 		h.user.Model.Username,
 		false, // Shared?
 		r.FormValue("title"),
+		models.TagStringToTags(r.FormValue("tags")),
 		r.FormValue("content"),
 	)
 	err := entity.Save(h.db, h.esConn)

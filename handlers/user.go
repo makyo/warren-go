@@ -233,6 +233,7 @@ func (h *Handlers) EditProfile(w http.ResponseWriter, r *http.Request, render re
 		h.user.Model.Username,
 		false,
 		"",
+		[]string{},
 		user.Profile{
 			ProfileText: profileStr,
 			Pronouns:    pronouns,

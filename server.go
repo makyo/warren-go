@@ -113,9 +113,9 @@ func main() {
 	m.Get("/post/create", h.DisplayCreatePost)
 	m.Post("/post/create", h.CreatePost)
 
-	m.Get("/posts", h.ListAll)
 	m.Get("/posts/following", h.ListFollowing)
 	m.Get("/posts/friends", h.ListFriends)
+	m.Get("/tag/:tag", h.DisplayTag)
 
 	m.Get("/search", h.Search)
 

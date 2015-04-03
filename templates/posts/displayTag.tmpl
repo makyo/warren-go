@@ -1,0 +1,5 @@
+<ul>
+{{range .Hits}}
+<li><a href="/{{.Id.Hex}}">{{.Title}}</a> - <em>by <a href="/~{{.Owner}}">{{.Owner}}</a></em></li>
+{{end}}
+</ul>
