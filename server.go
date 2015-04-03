@@ -116,6 +116,7 @@ func main() {
 	m.Get("/posts/following", h.ListFollowing)
 	m.Get("/posts/friends", h.ListFriends)
 
+	m.Get("/search", h.DisplaySearch)
 	m.Post("/search", h.SearchResults)
 
 	m.Use(secure.Secure(secure.Options{
