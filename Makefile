@@ -1,7 +1,3 @@
-ifndef GOPATH
-	$(warning You need to set up a GOPATH)
-endif
-
 PROJECT := github.com/warren-community/warren
 PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
 
@@ -9,7 +5,8 @@ NODE_TARGETS=node_modules/coffee_script
 
 help:
 	@echo "Available targets:"
-	@echo "  deps - fetch all dependencies required"
+	@echo "  godeps - fetch all dependencies required"
+	@echo "  deps - set dependencies at required versions"
 	@echo "  devel - run the development server using gin"
 	@echo "  run - run the development server without using gin"
 	@echo "  create-deps - rebuild the dependencies.tsv file"
@@ -21,19 +18,21 @@ help:
 $(NODE_TARGETS): package.json
 	npm install
 
-$(GOPATH)/bin/godeps:
-	go get -v launchpad.net/godeps
-
 coffee: $(NODE_TARGETS)
 	node_modules/coffee-script/bin/coffee -o public/js -cw public/coffee
 
+godeps:
+	go get -v github.com/codegangsta/gin/...
+	go get -v github.com/smartystreets/goconvey/...
+	go get -v launchpad.net/godeps
+
 ifeq ($(CURDIR),$(PROJECT_DIR))
 
-deps: $(GOPATH)/bin/godeps
-	go get -v github.com/codegangsta/gin/... github.com/smartystreets/goconvey/...
-	$(GOPATH)/bin/godeps -u dependencies.tsv
+deps: godeps
+	go get -v ./...
+	godeps -u dependencies.tsv
 
-create-deps: $(GOPATH)/bin/godeps
+create-deps:
 	godeps -t $(shell go list $(PROJECT)/...) > dependencies.tsv || true
 
 devel:
@@ -85,4 +84,4 @@ clean:
 
 endif
 
-.PHONY: all build check clean coffee create-deps deps devel gin install run
+.PHONY: all build check clean coffee create-deps deps devel gin godeps install run
