@@ -124,7 +124,9 @@ func main() {
 	m.Use(secure.Secure(secure.Options{
 		//AllowedHosts:          []string{"example.com", "ssl.example.com"},
 		//SSLHost:               "ssl.example.com",
-		SSLRedirect:           true,
+		// The following is commented out until the charm has a means of
+		// producing/serving SSL certs.
+		//SSLRedirect:           true,
 		SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
 		STSSeconds:            315360000,
 		STSIncludeSubdomains:  true,
