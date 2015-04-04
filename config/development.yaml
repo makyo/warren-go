@@ -3,6 +3,7 @@
 env-type: "development"
 
 template-dir: "templates"
+static-dir: "public"
 
 session-keys:
     # auth-key should be 16 or 32 characters
