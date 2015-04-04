@@ -24,6 +24,7 @@ import (
 // Store the configuration information for the application.
 type Config struct {
 	EnvironmentType string `yaml:"env-type"`
+	TemplateDir     string `yaml:"template-dir"`
 	SessionKeys     struct {
 		AuthKey       string `yaml:"auth-key"`
 		EncryptionKey string `yaml:"encryption-key"`
@@ -42,9 +43,10 @@ type Config struct {
 }
 
 var (
-	store  sessions.Store
-	db     *mgo.Database
-	esConn *elastigo.Conn
+	store       sessions.Store
+	db          *mgo.Database
+	esConn      *elastigo.Conn
+	templateDir string
 
 	dbSession *mgo.Session
 )
@@ -77,6 +79,8 @@ func init() {
 	esConn = elastigo.NewConn()
 	esConn.Domain = config.ElasticSearch.Host
 	esConn.Port = config.ElasticSearch.Port
+
+	templateDir = config.TemplateDir
 }
 
 // Start the Martini webserver, initialize handlers, routes, and middleware.
@@ -136,7 +140,8 @@ func main() {
 		ContentSecurityPolicy: "default-src 'self'; style-src 'self' 'unsafe-inline'",
 	}))
 	m.Use(render.Renderer(render.Options{
-		Layout: "base",
+		Directory: templateDir,
+		Layout:    "base",
 		Funcs: []template.FuncMap{
 			{
 				"mod": func(x int, y int) int {
