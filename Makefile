@@ -3,6 +3,16 @@ PROJECT_DIR := $(shell go list -e -f '{{.Dir}}' $(PROJECT))
 
 NODE_TARGETS=node_modules/coffee_script
 
+UPDATE_CACHE ?= \
+	echo "Updating/installing the cache..."; \
+	if test -d public/lib; then \
+		echo "Cache found; updating."; \
+		cd public/lib && git pull origin master || true; \
+	else \
+		echo "Cache not found; installing. This make take awhile."; \
+		git clone --depth=1 "https://github.com/warren-community/warren-downloadcache.git" public/lib; \
+	fi
+
 help:
 	@echo "Available targets:"
 	@echo "  godeps - fetch all dependencies required"
@@ -29,6 +39,7 @@ godeps:
 ifeq ($(CURDIR),$(PROJECT_DIR))
 
 deps: godeps
+	$(call UPDATE_CACHE)
 	go get -v ./...
 	godeps -u dependencies.tsv
 

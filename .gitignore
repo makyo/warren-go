@@ -29,3 +29,6 @@ gin-bin
 # Node modules
 node_modules
 npm-debug.log
+
+# Download cache
+public/lib
