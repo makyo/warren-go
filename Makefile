@@ -31,10 +31,15 @@ $(NODE_TARGETS): package.json
 coffee: $(NODE_TARGETS)
 	node_modules/coffee-script/bin/coffee -o public/js -cw public/coffee
 
-godeps:
+devdeps:
+	sudo apt-get install -y mongodb elasticsearch
 	go get -v github.com/codegangsta/gin/...
+
+godeps:
 	go get -v github.com/smartystreets/goconvey/...
 	go get -v launchpad.net/godeps
+
+sysdeps: devdeps godeps
 
 ifeq ($(CURDIR),$(PROJECT_DIR))
 
