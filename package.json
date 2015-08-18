@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Warren is a networked content-sharing site",
   "dependencies": {
-    "coffee-script": "1.9.0"
+    "coffee-script": "1.9.3"
   },
   "repository": {
     "type": "git",
