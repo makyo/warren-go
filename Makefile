@@ -37,6 +37,8 @@ devdeps:
 
 godeps:
 	go get -v github.com/smartystreets/goconvey/...
+
+godeps:
 	go get -v launchpad.net/godeps
 
 sysdeps: devdeps godeps
